@@ -1,8 +1,8 @@
-# VoltHub — e-motive parts marketplace (demo)
+# IonxSupply — e-motive parts marketplace (demo)
 
 **Live demo:** https://krenniccrinek-hash.github.io/volthub-demo/
 
-A fully client-side simulation of VoltHub, a multi-seller marketplace for e-bike / e-scooter / e-moto parts. Everything runs in your browser with `localStorage` — no backend, no real payments, sample data only.
+A fully client-side simulation of IonxSupply, a multi-seller marketplace for e-bike / e-scooter / e-moto parts. Everything runs in your browser with `localStorage` — no backend, no real payments, sample data only.
 
 ## What you can do in the demo
 - Browse: trending parts, categories, **shop-by-bike fitment search**, filters (category, condition, price, bike), sort

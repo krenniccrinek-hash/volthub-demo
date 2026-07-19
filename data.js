@@ -1,4 +1,4 @@
-/* VoltHub demo — seed data. All simulated. */
+/* IonxSupply demo — seed data. All simulated. */
 
 const CATS = [
   { id: 'batteries',  name: 'Batteries',             icon: 'battery',   blurb: 'Packs & cells' },
@@ -264,16 +264,16 @@ function seedDB() {
 
 const LEGAL = {
   tos: { title: 'Terms of Service', body: `
-<h3>1. What VoltHub is</h3><p>VoltHub is a marketplace venue. Sellers list and sell their own items; the contract of sale is between buyer and seller. VoltHub provides listing tools, discovery, and payment processing (via Stripe in the real product; simulated in this demo).</p>
+<h3>1. What IonxSupply is</h3><p>IonxSupply is a marketplace venue. Sellers list and sell their own items; the contract of sale is between buyer and seller. IonxSupply provides listing tools, discovery, and payment processing (via Stripe in the real product; simulated in this demo).</p>
 <h3>2. Accounts</h3><p>You must be 18+ to buy or sell. You are responsible for activity on your account. We may suspend accounts that violate these terms or our policies.</p>
-<h3>3. Fees</h3><p>Listing is free. VoltHub charges sellers 10% of the item subtotal (after seller discounts), minimum $0.50 per order. Payment processing is included.</p>
-<h3>4. Content & conduct</h3><p>You own your listings; you grant VoltHub a license to display them. No fake reviews, no report abuse, no off-platform payment steering.</p>
-<h3>5. Liability</h3><p>Items are sold by sellers, not VoltHub. To the extent permitted by law, VoltHub's liability is limited to fees paid to us in the prior 12 months. Disputes go through binding arbitration except where prohibited.</p>
+<h3>3. Fees</h3><p>Listing is free. IonxSupply charges sellers 10% of the item subtotal (after seller discounts), minimum $0.50 per order. Payment processing is included.</p>
+<h3>4. Content & conduct</h3><p>You own your listings; you grant IonxSupply a license to display them. No fake reviews, no report abuse, no off-platform payment steering.</p>
+<h3>5. Liability</h3><p>Items are sold by sellers, not IonxSupply. To the extent permitted by law, IonxSupply's liability is limited to fees paid to us in the prior 12 months. Disputes go through binding arbitration except where prohibited.</p>
 <p><em>Demo document — real product ships lawyer-reviewed terms.</em></p>` },
   privacy: { title: 'Privacy Policy', body: `
 <h3>What we collect</h3><p>Account info (name, email), listings, orders and shipping addresses, and usage analytics. In this demo, everything lives in your own browser's localStorage — nothing is sent anywhere.</p>
 <h3>Processors (production)</h3><p>Supabase (database/auth), Stripe (payments — we never see card numbers), Resend (email), Vercel (hosting/analytics).</p>
-<h3>Your rights</h3><p>Export or delete your data any time by emailing privacy@volthub.example. We honor GDPR/CCPA requests. Order records are retained 7 years for tax compliance.</p>
+<h3>Your rights</h3><p>Export or delete your data any time by emailing privacy@ionxsupply.example. We honor GDPR/CCPA requests. Order records are retained 7 years for tax compliance.</p>
 <h3>Cookies</h3><p>Session cookies for login; no third-party ad trackers, ever.</p>` },
   prohibited: { title: 'Prohibited & Restricted Items', body: `
 <h3>Batteries (restricted)</h3><ul><li>Packs must be UN38.3 tested; UL 2271/2849 listing must be declared in the listing's certification field.</li><li>Ship per DOT/PHMSA rules — ground only where required, proper hazmat marking.</li><li>No damaged, swollen, water-exposed, or recalled packs. No repacked cells sold as OEM.</li></ul>
@@ -281,7 +281,7 @@ const LEGAL = {
 <h3>Condition honesty</h3><p>"For parts" items must state why. Undisclosed damage = listing removal on first offense, suspension on second.</p>` },
   refunds: { title: 'Returns, Refunds & Buyer Protection', body: `
 <h3>The window</h3><p>You have 48 hours after delivery to inspect and open a dispute if the item is not as described. Items-not-received qualifies automatically when tracking shows no movement for 10 days.</p>
-<h3>How disputes work</h3><p>Open a refund request from your order. VoltHub mediates between you and the seller within 3 business days. If found in your favor, the refund is issued to your original payment method and reversed from the seller's payout.</p>
+<h3>How disputes work</h3><p>Open a refund request from your order. IonxSupply mediates between you and the seller within 3 business days. If found in your favor, the refund is issued to your original payment method and reversed from the seller's payout.</p>
 <h3>What's covered</h3><p>Item not received, materially not as described, wrong item. Not covered: buyer's remorse, fitment mistakes when the listing's fitment data was accurate (check twice!), normal wear on used items graded correctly.</p>
 <h3>Seller protections</h3><p>Sellers with tracking + accurate condition grading win not-as-described claims backed by their listing photos.</p>` },
 };

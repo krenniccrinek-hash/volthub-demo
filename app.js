@@ -1,7 +1,7 @@
-/* VoltHub demo — simulated marketplace app. All data in localStorage. */
+/* IonxSupply demo — simulated marketplace app. All data in localStorage. */
 
 /* ================= state ================= */
-const DBKEY = 'volthub_db_v1';
+const DBKEY = 'ionxsupply_db_v1';
 let DB;
 try { DB = JSON.parse(localStorage.getItem(DBKEY)) || null; } catch (e) { DB = null; }
 if (!DB || DB.v !== 2) {
@@ -99,9 +99,9 @@ function cartCount() { return cartOf().items.reduce((s, i) => s + i.qty, 0); }
 function renderNav() {
   const u = me(), s = mySeller();
   $('#nav').innerHTML = `<div class="nav"><div class="nav-inner">
-    <a class="logo" href="#/"><span class="logo-badge"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#1c1d20"/><path d="M36 8 L18 38 h11 L27 56 L46 26 h-11 Z" fill="#c4c7cd"/></svg></span>VoltHub</a>
+    <a class="logo" href="#/" aria-label="IonxSupply"><span class="logo-txt">Ion</span><svg class="logo-atom" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" aria-hidden="true"><ellipse cx="50" cy="50" rx="43" ry="15"/><ellipse cx="50" cy="50" rx="43" ry="15" transform="rotate(60 50 50)"/><ellipse cx="50" cy="50" rx="43" ry="15" transform="rotate(120 50 50)"/><circle cx="50" cy="50" r="8" fill="currentColor" stroke="none"/><circle cx="93" cy="50" r="5.5" fill="currentColor" stroke="none"/><circle cx="28.5" cy="87" r="5.5" fill="currentColor" stroke="none"/><circle cx="28.5" cy="13" r="5.5" fill="currentColor" stroke="none"/></svg><span class="logo-txt">Supply</span></a>
     <nav class="nav-links">
-      <a href="#/search">Shop parts</a><a href="#/sellers">Sellers</a><a href="#/sell">Sell on VoltHub</a>
+      <a href="#/search">Shop parts</a><a href="#/sellers">Sellers</a><a href="#/sell">Sell on IonxSupply</a>
       ${u && u.role === 'admin' ? '<a href="#/admin">Admin</a>' : ''}
       ${s ? '<a href="#/dashboard">Dashboard</a>' : ''}
     </nav>
@@ -125,7 +125,7 @@ function mobileMenu() {
   const u = me(), s = mySeller();
   modal(`${modalHead('Menu')}<div class="modal-body"><div class="user-drop open" style="position:static;box-shadow:none;border:none;min-width:0">
     <a href="#/search" onclick="closeModal()">Shop parts</a><a href="#/sellers" onclick="closeModal()">Sellers</a>
-    <a href="#/sell" onclick="closeModal()">Sell on VoltHub</a>
+    <a href="#/sell" onclick="closeModal()">Sell on IonxSupply</a>
     ${s ? '<a href="#/dashboard" onclick="closeModal()">Seller dashboard</a>' : ''}
     ${u && u.role === 'admin' ? '<a href="#/admin" onclick="closeModal()">Admin</a>' : ''}
     <a href="#/orders" onclick="closeModal()">My orders</a><a href="#/account" onclick="closeModal()">My account</a>
@@ -134,14 +134,14 @@ function mobileMenu() {
 }
 function renderFooter() {
   $('#footer').innerHTML = `<div class="footer"><div class="footer-inner">
-    <div><div class="logo" style="color:#fff"><span class="logo-badge"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#c4c7cd"/><path d="M36 8 L18 38 h11 L27 56 L46 26 h-11 Z" fill="#1c1d20"/></svg></span>VoltHub</div>
+    <div><div class="logo" style="color:#fff" aria-label="IonxSupply"><span class="logo-txt">Ion</span><svg class="logo-atom" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" aria-hidden="true"><ellipse cx="50" cy="50" rx="43" ry="15"/><ellipse cx="50" cy="50" rx="43" ry="15" transform="rotate(60 50 50)"/><ellipse cx="50" cy="50" rx="43" ry="15" transform="rotate(120 50 50)"/><circle cx="50" cy="50" r="8" fill="currentColor" stroke="none"/><circle cx="93" cy="50" r="5.5" fill="currentColor" stroke="none"/><circle cx="28.5" cy="87" r="5.5" fill="currentColor" stroke="none"/><circle cx="28.5" cy="13" r="5.5" fill="currentColor" stroke="none"/></svg><span class="logo-txt">Supply</span></div>
       <p style="font-size:.84rem;margin-top:.6rem;max-width:270px">The parts market that knows your bike. Verified sellers, fitment-first search, buyer protection.</p>
       <form class="news-input" onsubmit="event.preventDefault();toast('<b>Subscribed!</b> (demo — no emails sent)');this.reset()">
         <input placeholder="Email for drop alerts" type="email" required><button class="btn btn-aqua btn-sm" type="submit">Join</button></form></div>
     <div><h5>Marketplace</h5><a href="#/search">All parts</a><a href="#/search?cat=batteries">Batteries</a><a href="#/search?cat=motors">Motors</a><a href="#/search?cond=used">Used parts</a><a href="#/sellers">Seller directory</a></div>
     <div><h5>Sell</h5><a href="#/sell">Become a seller</a><a href="#/legal/prohibited">Prohibited items</a><a href="#/dashboard">Seller dashboard</a></div>
     <div><h5>Trust & legal</h5><a href="#/legal/refunds">Buyer protection</a><a href="#/legal/tos">Terms of Service</a><a href="#/legal/privacy">Privacy</a><a href="#/legal/prohibited">Battery shipping rules</a></div>
-    <div class="fine"><span>© 2026 VoltHub — demo build. Simulated data; no real payments, sellers or inventory.</span><span>Sold by independent sellers · VoltHub is a marketplace venue</span></div>
+    <div class="fine"><span>© 2026 IonxSupply — demo build. Simulated data; no real payments, sellers or inventory.</span><span>Sold by independent sellers · IonxSupply is a marketplace venue</span></div>
   </div></div>`;
 }
 
@@ -184,7 +184,7 @@ function loginAs(u, fresh = false) {
   });
   DB.guestCart = { items: [], codes: {} };
   DB.session = u.id; save(); closeModal(); render();
-  toast(fresh ? `<b>Welcome to VoltHub,</b> ${esc(u.name.split(' ')[0])}!` : `<b>Signed in</b> as ${esc(u.name)}`);
+  toast(fresh ? `<b>Welcome to IonxSupply,</b> ${esc(u.name.split(' ')[0])}!` : `<b>Signed in</b> as ${esc(u.name)}`);
 }
 function logout() { DB.session = null; save(); go('#/'); render(); toast('Signed out.'); }
 function requireAuth() { if (!me()) { openAuth(); return false; } return true; }
@@ -251,7 +251,7 @@ function viewHome() {
     <section class="section"><div class="section-head reveal"><div><h2>Shop by bike</h2><p>Parts filtered to what actually fits</p></div></div>
       <div class="hero-chips" style="justify-content:flex-start">${BIKES.map(b => `<button class="chip reveal" onclick="go('#/bike/${b.id}')">${b.brand} ${b.model}</button>`).join('')}</div></section>
     <section class="section"><div class="band reveal"><h2>Turn your parts bin into a storefront.</h2>
-      <p>Your own shop at <b>yourname.volthub.example</b>, discount codes, dashboards and payouts — we take 10% only when you sell.</p>
+      <p>Your own shop at <b>yourname.ionxsupply.example</b>, discount codes, dashboards and payouts — we take 10% only when you sell.</p>
       <div class="stats"><div><b data-count="${DB.products.reduce((s, p) => s + p.sold, 0)}"></b><span>parts sold</span></div><div><b data-count="${DB.reviews.length}"></b><span>verified reviews</span></div><div><b>10%</b><span>flat fee, listing is free</span></div></div>
       <a class="btn btn-aqua btn-lg" href="#/sell">Apply to sell →</a></div></section>
     <section class="section"><div class="section-head reveal"><div><h2>Top-rated sellers</h2></div><a class="see-all" href="#/sellers">Directory →</a></div>
@@ -368,7 +368,7 @@ function viewProduct(seg) {
       <div class="seller-box" onclick="go('#/s/${s.slug}')">
         <div class="s-logo" style="background:${sellerLogoBg(s)};width:44px;height:44px;font-size:.9rem">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
         <div style="flex:1"><div class="s-name">${esc(s.name)} ${s.verified ? `<span class="badge badge-verified">${icon('check')} Verified</span>` : ''}</div>
-          <div class="rating-line">${stars(r.avg)} ${r.count} reviews · ${timeAgo(s.joined).replace(' ago', '')} on VoltHub</div></div>
+          <div class="rating-line">${stars(r.avg)} ${r.count} reviews · ${timeAgo(s.joined).replace(' ago', '')} on IonxSupply</div></div>
         <span class="see-all">Visit shop →</span></div>
       <h3 style="margin:1.1rem 0 .2rem;font-size:1rem">Specs</h3>
       <table class="spec-table">${Object.entries(p.specs).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table>
@@ -378,7 +378,7 @@ function viewProduct(seg) {
         ${!p.universal && !p.fits.length ? '<span style="font-size:.85rem;color:var(--ink3)">Fitment not specified — ask the seller.</span>' : ''}</div>
       <p style="margin-top:1rem;color:var(--ink2);font-size:.93rem">${esc(p.desc)}</p>
       ${p.cat === 'batteries' ? `<div class="notice">🔋 Lithium battery: ships ground per DOT rules. Certification: <b>${esc(p.specs['Certification'] || 'not declared')}</b>. <a href="#/legal/prohibited">Battery policy</a></div>` : ''}
-      <div class="protect">${icon('shield')}<div><b>VoltHub Buyer Protection.</b> Payment held by the platform, released to the seller on fulfillment. Not as described? <a href="#/legal/refunds">Open a dispute</a> within 48h of delivery.</div></div>
+      <div class="protect">${icon('shield')}<div><b>IonxSupply Buyer Protection.</b> Payment held by the platform, released to the seller on fulfillment. Not as described? <a href="#/legal/refunds">Open a dispute</a> within 48h of delivery.</div></div>
     </div></div>
   ${similar.length ? `<section class="section"><div class="section-head"><h2>Similar parts</h2></div><div class="grid grid-products">${similar.map(pCard).join('')}</div></section>` : ''}
   </div>`;
@@ -403,7 +403,7 @@ function viewStore(seg, q) {
       <div class="store-id">
         <h1 class="store-name">${esc(s.name)} ${s.verified ? `<span class="badge badge-verified">${icon('check')} Verified seller</span>` : ''}</h1>
         <div class="rating-line">${stars(r.avg)} <b>${r.avg ? r.avg.toFixed(1) : 'New'}</b> (${r.count} reviews) · ${items.length} items · joined ${timeAgo(s.joined)}</div>
-        <div class="store-domain">🌐 ${s.slug}.volthub.example <span style="opacity:.6">(seller subdomains — live in the real build)</span></div>
+        <div class="store-domain">🌐 ${s.slug}.ionxsupply.example <span style="opacity:.6">(seller subdomains — live in the real build)</span></div>
       </div>
       <div class="store-actions"><button class="btn btn-danger btn-sm" onclick="openReport('${s.id}')">${icon('flag')} Report seller</button></div></div>
     ${codes.length ? `<div class="code-banner">🎟️ <b>Shop codes:</b> ${codes.map(c => `<button class="code-tag" onclick="navigator.clipboard&&navigator.clipboard.writeText('${c.code}');toast('<b>${c.code}</b> copied — paste it at checkout.')">${c.code}</button> <span style="color:var(--ink3)">${c.type === 'percent' ? c.value + '% off' : money(c.value) + ' off'}${c.min ? ' over ' + money(c.min) : ''}</span>`).join(' · ')}</div>` : ''}
@@ -416,7 +416,7 @@ function viewStore(seg, q) {
       <div class="section-head"><h2 style="font-size:1.1rem">All items</h2></div>
       ${items.length ? `<div class="grid grid-products">${items.map(pCard).join('')}</div>` : '<div class="empty">No items listed right now.</div>'}` : ''}
     ${tab === 'reviews' ? (reviews.length ? reviews.map(rv => { const u = userById(rv.buyerId); return `<div class="review"><div class="review-head"><span class="avatar">${esc((u?.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2))}</span><b style="font-size:.9rem">${esc(u?.name || 'Buyer')}</b> ${stars(rv.rating)} <small>· verified purchase · ${timeAgo(rv.ts)}</small></div><p>${esc(rv.body)}</p></div>`; }).join('') : '<div class="empty">No reviews yet.</div>') : ''}
-    ${tab === 'about' ? `<div class="panel" style="max-width:640px"><p style="color:var(--ink2)">${esc(s.bio)}</p><p style="margin-top:.8rem;font-size:.83rem;color:var(--ink3)">All sales run through VoltHub checkout with buyer protection. Payouts to sellers via Stripe. <a href="#/legal/refunds">How protection works</a></p></div>` : ''}
+    ${tab === 'about' ? `<div class="panel" style="max-width:640px"><p style="color:var(--ink2)">${esc(s.bio)}</p><p style="margin-top:.8rem;font-size:.83rem;color:var(--ink3)">All sales run through IonxSupply checkout with buyer protection. Payouts to sellers via Stripe. <a href="#/legal/refunds">How protection works</a></p></div>` : ''}
   </div>`;
 }
 function openReport(sellerId) {
@@ -427,7 +427,7 @@ function openReport(sellerId) {
       <option value="">Choose a reason…</option><option value="scam">Scam / attempted fraud</option><option value="counterfeit">Counterfeit or unsafe item</option>
       <option value="not_shipped">Item never shipped</option><option value="fake_listing">Fake or misleading listing</option><option value="other">Something else</option></select></div>
     <div class="field"><label>Details</label><textarea name="details" required placeholder="What happened, which listing, when…"></textarea>
-    <div class="hint">Reports go to VoltHub's trust team. False reports violate our terms.</div></div>
+    <div class="hint">Reports go to IonxSupply's trust team. False reports violate our terms.</div></div>
     <button class="btn btn-primary">Submit report</button></form></div>`);
 }
 function submitReport(f, sellerId) {
@@ -453,7 +453,7 @@ function viewSell() {
   <div class="hero" style="border:none;background:none"><div class="hero-inner" style="padding:3rem 0 1.6rem">
     <span class="hero-eyebrow"><span class="dot"></span> Now onboarding e-motive sellers</span>
     <h1>Your parts bin is<br><em>a business.</em></h1>
-    <p class="sub">Get a verified storefront on your own VoltHub subdomain, run discount codes, and reach riders searching by their exact bike.</p></div></div>
+    <p class="sub">Get a verified storefront on your own IonxSupply subdomain, run discount codes, and reach riders searching by their exact bike.</p></div></div>
   <div class="step-cards reveal">
     <div class="step-card"><div class="num">1</div><b>Apply in 2 minutes</b><p>Tell us what you sell. We review every application — that's why buyers trust the marketplace.</p></div>
     <div class="step-card"><div class="num">2</div><b>Verify & connect payouts</b><p>Stripe identity check + bank connection. You're the merchant; we handle checkout and protection.</p></div>
@@ -462,7 +462,7 @@ function viewSell() {
     <div class="fee-calc reveal"><h3 style="margin-bottom:.3rem">What you'd keep</h3><p style="font-size:.85rem;color:var(--ink3)">Drag your monthly parts sales:</p>
       <input type="range" min="100" max="10000" value="1500" step="100" oninput="feeCalc(this.value)">
       <div class="fee-out"><span>Monthly sales</span><b id="fc-gross">$1,500</b></div>
-      <div class="fee-out"><span>VoltHub fee (10%)</span><b id="fc-fee">−$150</b></div>
+      <div class="fee-out"><span>IonxSupply fee (10%)</span><b id="fc-fee">−$150</b></div>
       <div class="fee-out" style="border-top:1.5px solid var(--line);padding-top:.5rem"><span>You keep</span><b id="fc-net" style="color:var(--aqua-deep)">$1,350</b></div>
       <p style="font-size:.75rem;color:var(--ink3);margin-top:.6rem">Payment processing included. No listing fees, no monthly fees.</p></div>
     <div class="accordion reveal">${[
@@ -470,7 +470,7 @@ function viewSell() {
       ['How do payouts work?', 'Through Stripe Connect. Money from each sale (minus the 10% fee) transfers to your bank on a rolling schedule after fulfillment.'],
       ['Can I sell batteries?', 'Yes, with rules: UN38.3 documentation, declared certification status, ground shipping. Read the battery policy before applying.'],
       ['What about scam protection?', 'Cuts both ways. Buyers get dispute mediation; sellers with tracking and honest photos win not-as-described claims. Repeat bad actors get suspended.'],
-      ['Do I really get my own subdomain?', 'Yes — yourshop.volthub.example (simulated in this demo, real wildcard domains in production). Your storefront, your branding, your codes.'],
+      ['Do I really get my own subdomain?', 'Yes — yourshop.ionxsupply.example (simulated in this demo, real wildcard domains in production). Your storefront, your branding, your codes.'],
     ].map(([q2, a]) => `<div class="acc-item"><button onclick="this.parentElement.classList.toggle('open')">${q2}<span class="chev">⌄</span></button><div class="acc-body"><div>${a}</div></div></div>`).join('')}</div>
   </div></section>
   <section class="section" style="max-width:560px;margin:0 auto">
@@ -483,7 +483,7 @@ function viewSell() {
         <p style="font-size:.75rem;color:var(--ink3);margin-top:.5rem">In production this is an admin review + Stripe identity/payout onboarding.</p>`
       : `<form class="form" onsubmit="event.preventDefault();applySeller(this)">
         <div class="form-row"><div class="field"><label>Shop name</label><input name="shop" required placeholder="Volt Garage" maxlength="30"></div>
-        <div class="field"><label>Shop URL</label><input name="slug" required pattern="[a-z0-9](-?[a-z0-9])*" placeholder="volt-garage" maxlength="24"><div class="hint">yourname.volthub.example</div></div></div>
+        <div class="field"><label>Shop URL</label><input name="slug" required pattern="[a-z0-9](-?[a-z0-9])*" placeholder="volt-garage" maxlength="24"><div class="hint">yourname.ionxsupply.example</div></div></div>
         <div class="field"><label>What do you sell?</label><textarea name="pitch" required placeholder="Inventory, experience, links to past sales…"></textarea></div>
         <label class="check-line"><input type="checkbox" required> I've read the <a href="#/legal/prohibited">Prohibited Items policy</a> (especially batteries) and agree to the <a href="#/legal/tos">Seller Terms</a>.</label>
         <div id="apply-err"></div>
@@ -507,7 +507,7 @@ function approveApplication(appId, self = false) {
   a.status = 'approved'; a.decidedTs = Date.now();
   const u = userById(a.userId);
   const colors = Object.values(SELLER_COLORS);
-  const s = { id: uid('s'), userId: u.id, slug: a.slug, name: a.shop, color: colors[Math.floor(Math.random() * colors.length)], tagline: 'New on VoltHub — say hi!', bio: a.pitch, status: 'active', joined: Date.now(), verified: true };
+  const s = { id: uid('s'), userId: u.id, slug: a.slug, name: a.shop, color: colors[Math.floor(Math.random() * colors.length)], tagline: 'New on IonxSupply — say hi!', bio: a.pitch, status: 'active', joined: Date.now(), verified: true };
   DB.sellers.push(s); u.role = u.role === 'admin' ? 'admin' : 'seller'; u.sellerId = s.id; save();
   toast(self ? `<b>${esc(a.shop)} is live!</b> Stripe onboarding simulated ✓ — list your first part.` : `Approved <b>${esc(a.shop)}</b>.`);
 }
@@ -624,11 +624,11 @@ function viewCheckout() {
       <div class="form-row"><div class="field"><label>Expiry</label><input name="exp" required value="12/29"></div>
       <div class="field"><label>CVC</label><input name="cvc" required value="424"></div></div>
       <button class="btn btn-primary btn-lg" id="pay-btn" type="submit">${icon('lock')} Pay ${money(grand)}</button>
-      <p style="font-size:.75rem;color:var(--ink3)">By paying you agree to the <a href="#/legal/tos">Terms</a> and <a href="#/legal/refunds">Refund Policy</a>. Sold by independent sellers; VoltHub processes payment.</p>
+      <p style="font-size:.75rem;color:var(--ink3)">By paying you agree to the <a href="#/legal/tos">Terms</a> and <a href="#/legal/refunds">Refund Policy</a>. Sold by independent sellers; IonxSupply processes payment.</p>
     </form>
     <div class="panel" style="position:sticky;top:84px;height:fit-content"><h3 style="margin-bottom:.6rem">Order summary</h3>
       <div class="totals">${lines}<div class="row total"><span>Total</span><span>${money(grand)}</span></div></div>
-      <div class="protect" style="margin-top:.9rem">${icon('shield')}<div>Funds are held by VoltHub and released to sellers per-shipment. Disputes within 48h of delivery.</div></div></div>
+      <div class="protect" style="margin-top:.9rem">${icon('shield')}<div>Funds are held by IonxSupply and released to sellers per-shipment. Disputes within 48h of delivery.</div></div></div>
   </div></div>`;
 }
 function doPay(f) {
@@ -724,7 +724,7 @@ function openDispute(oid) {
   modal(`${modalHead('Request a refund')}<div class="modal-body"><form class="form" onsubmit="event.preventDefault();submitDispute(this,'${oid}')">
     <div class="field"><label>Reason</label><select name="reason" required><option value="not_shipped">Never arrived</option><option value="fake_listing">Not as described</option><option value="other">Other</option></select></div>
     <div class="field"><label>What happened?</label><textarea name="details" required></textarea></div>
-    <p style="font-size:.78rem;color:var(--ink3)">VoltHub mediates within 3 business days. If found in your favor, refund goes to your original payment method.</p>
+    <p style="font-size:.78rem;color:var(--ink3)">IonxSupply mediates within 3 business days. If found in your favor, refund goes to your original payment method.</p>
     <button class="btn btn-primary">Open dispute</button></form></div>`);
 }
 function submitDispute(f, oid) {
@@ -766,7 +766,7 @@ function viewDashboard(seg, q) {
   const tabs = [['overview', 'Overview'], ['products', `Products (${myP.length})`], ['codes', `Codes (${myC.length})`], ['orders', `Orders (${myO.length})`], ['settings', 'Settings']];
   return `<div class="wrap"><div class="page-head" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
     <div class="s-logo" style="background:${sellerLogoBg(s)};width:54px;height:54px">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
-    <div style="flex:1"><h1 style="font-size:1.4rem">${esc(s.name)}</h1><p>${s.slug}.volthub.example · <a href="#/s/${s.slug}">view public storefront →</a></p></div>
+    <div style="flex:1"><h1 style="font-size:1.4rem">${esc(s.name)}</h1><p>${s.slug}.ionxsupply.example · <a href="#/s/${s.slug}">view public storefront →</a></p></div>
     ${s.status === 'suspended' ? '<span class="badge badge-danger">SUSPENDED</span>' : '<span class="badge badge-verified">Active · payouts on</span>'}</div>
   <div class="side-tabs">${tabs.map(([v, n]) => `<button class="${tab === v ? 'active' : ''}" onclick="go('#/dashboard?tab=${v}')">${n}</button>`).join('')}</div>
   ${tab === 'overview' ? `
@@ -795,7 +795,7 @@ function viewDashboard(seg, q) {
     <div class="field"><label>Shop name</label><input name="name" value="${esc(s.name)}" required></div>
     <div class="field"><label>Tagline</label><input name="tagline" value="${esc(s.tagline)}" maxlength="80"></div>
     <div class="field"><label>About</label><textarea name="bio">${esc(s.bio)}</textarea></div>
-    <div class="field"><label>Shop URL</label><input value="${s.slug}.volthub.example" disabled><div class="hint">Subdomain is locked after approval (production: wildcard DNS under our domain).</div></div>
+    <div class="field"><label>Shop URL</label><input value="${s.slug}.ionxsupply.example" disabled><div class="hint">Subdomain is locked after approval (production: wildcard DNS under our domain).</div></div>
     <button class="btn btn-primary">Save settings</button></form></div>` : ''}
   </div>`;
 }
@@ -834,7 +834,7 @@ function brandEditorHTML(s) {
       <div class="bp-head">
         <div id="bp-logo" class="bp-logo" style="background:${sellerLogoBg(s)}">${initials}</div>
         <div class="bp-id"><div class="bp-name">${esc(s.name)} <span class="badge badge-verified">${icon('check')} Verified seller</span></div>
-          <div class="bp-sub">${stars(ratingOf(s.id).avg || 5)} <span class="bp-accent-chip">${esc(s.slug)}.volthub.example</span></div></div>
+          <div class="bp-sub">${stars(ratingOf(s.id).avg || 5)} <span class="bp-accent-chip">${esc(s.slug)}.ionxsupply.example</span></div></div>
       </div>
     </div>
     <input type="hidden" id="bp-color" value="${esc(s.color)}">
@@ -868,7 +868,7 @@ function brandEditorHTML(s) {
         <label class="brand-lbl">Accent color <span class="hint">— your logo + storefront highlights</span></label>
         <div class="brand-row">
           <input type="color" id="bp-accent" value="${accent || '#5b5f66'}" oninput="brandAccent()">
-          <span class="hint" id="bp-accent-hex">${accent || 'default (VoltHub grey)'}</span>
+          <span class="hint" id="bp-accent-hex">${accent || 'default (IonxSupply grey)'}</span>
           <button type="button" class="btn btn-ghost btn-sm" onclick="brandAccentReset()">Reset</button>
         </div>
       </div>
@@ -882,7 +882,7 @@ function brandPreview() {
   $('#bp-logo').style.background = accent || color;
   const scope = document.querySelector('.brand-preview');
   if (accent) scope.style.setProperty('--shop-accent', accent); else scope.style.removeProperty('--shop-accent');
-  const hex = $('#bp-accent-hex'); if (hex) hex.textContent = accent || 'default (VoltHub grey)';
+  const hex = $('#bp-accent-hex'); if (hex) hex.textContent = accent || 'default (IonxSupply grey)';
 }
 function brandType(t) {
   const img = t === 'image';
@@ -1007,7 +1007,7 @@ function viewAdmin(seg, q) {
     <div class="stat"><b data-count="${open.length}"></b><span>Open reports</span></div></div>
   <div class="side-tabs">${[['reports', `Reports (${open.length})`], ['apps', `Applications (${apps.length})`], ['sellers', 'Sellers']].map(([v, n]) => `<button class="${tab === v ? 'active' : ''}" onclick="go('#/admin?tab=${v}')">${n}</button>`).join('')}</div>
   ${tab === 'apps' ? `<div class="panel tbl-wrap"><table class="table"><tr><th>Shop</th><th>Applicant</th><th>Pitch</th><th></th></tr>
-    ${apps.map(a => `<tr><td><b>${esc(a.shop)}</b><br><span style="font-size:.75rem;color:var(--ink3)">${a.slug}.volthub.example</span></td>
+    ${apps.map(a => `<tr><td><b>${esc(a.shop)}</b><br><span style="font-size:.75rem;color:var(--ink3)">${a.slug}.ionxsupply.example</span></td>
       <td>${esc(userById(a.userId)?.name)}</td><td style="max-width:320px;font-size:.83rem">${esc(a.pitch)}</td>
       <td style="white-space:nowrap"><button class="btn btn-aqua btn-sm" onclick="approveApplication('${a.id}');render()">Approve</button>
       <button class="btn btn-danger btn-sm" onclick="rejectApp('${a.id}')">Reject</button></td></tr>`).join('') || '<tr><td colspan="4" style="color:var(--ink3)">Queue clear ✨</td></tr>'}</table></div>` : ''}
@@ -1047,7 +1047,7 @@ function unsuspendSeller(id) { sellerById(id).status = 'active'; save(); render(
 /* ---------- legal ---------- */
 function viewLegal(seg) {
   const page = LEGAL[seg[1]] || LEGAL.tos;
-  return `<div class="wrap"><div class="legal-page"><div class="page-head"><h1>${page.title}</h1><p>VoltHub demo · last updated July 2026</p></div>
+  return `<div class="wrap"><div class="legal-page"><div class="page-head"><h1>${page.title}</h1><p>IonxSupply demo · last updated July 2026</p></div>
     <div class="panel">${page.body}</div>
     <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem">${Object.entries(LEGAL).map(([k, v]) => `<a class="chip" href="#/legal/${k}">${v.title}</a>`).join('')}</div></div></div>`;
 }

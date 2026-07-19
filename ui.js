@@ -1,4 +1,4 @@
-/* VoltHub demo — UI helpers: icons, part art, toasts, modals, motion */
+/* IonxSupply demo — UI helpers: icons, part art, toasts, modals, motion */
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -64,7 +64,7 @@ function partArt(cat) {
     <g transform="translate(255,150) scale(9)" stroke="${ink}" opacity=".1" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${ic}</g>
     <g transform="translate(155,105)"><rect width="90" height="90" rx="24" fill="#ffffff" opacity=".92"/>
       <g transform="translate(21,21) scale(2)" stroke="${ink}" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ic}</g></g>
-    <text x="20" y="278" font-family="Sora,Inter,sans-serif" font-size="13" font-weight="700" fill="${ink}" opacity=".45">VoltHub · ${esc(c.name)}</text>
+    <text x="20" y="278" font-family="Sora,Inter,sans-serif" font-size="13" font-weight="700" fill="${ink}" opacity=".45">IonxSupply · ${esc(c.name)}</text>
   </svg>`;
 }
 function productArt(p) {
