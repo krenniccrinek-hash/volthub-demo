@@ -416,6 +416,7 @@ input,select,textarea{font:inherit;color:var(--ink)}
   .nav-search{display:none}
   .nav-links{display:none}
   .hamburger{display:grid}
+  .nav-actions{margin-left:auto}
 }
 @media (max-width:600px){
   .form-row{grid-template-columns:1fr}
