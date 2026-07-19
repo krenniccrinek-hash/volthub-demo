@@ -293,7 +293,7 @@ function viewHome() {
     <section class="section"><div class="section-head reveal"><div><h2>🔥 Trending parts</h2><p>Best sellers across the market, last 30 days</p></div><a class="see-all" href="#/search?sort=selling">See all →</a></div>
       <div class="grid grid-products">${pop.map(pCard).join('')}</div></section>
     <section class="section"><div class="section-head reveal"><div><h2>Shop by category</h2></div></div>
-      <div class="grid grid-cats">${CATS.map(c => `<div class="cat-tile reveal" onclick="go('#/search?cat=${c.id}')"><div class="ic">${icon(c.icon)}</div><b>${c.name}</b><small>${c.blurb}</small></div>`).join('')}</div></section>
+      <div class="grid grid-cats">${CATS.map(c => `<div class="cat-tile reveal" data-cat="${c.id}" onclick="go('#/search?cat=${c.id}')"><div class="ic">${icon(c.icon)}</div><b>${c.name}</b><small>${c.blurb}</small></div>`).join('')}</div></section>
     <section class="section"><div class="section-head reveal"><div><h2>Shop by bike</h2><p>Parts filtered to what actually fits</p></div></div>
       <div class="hero-chips" style="justify-content:flex-start">${BIKES.map(b => `<button class="chip reveal" onclick="go('#/bike/${b.id}')">${b.brand} ${b.model}</button>`).join('')}</div></section>
     <section class="section"><div class="band reveal"><h2>Turn your parts bin into a storefront.</h2>
@@ -504,6 +504,20 @@ function submitProductReview(f, pid, sellerId) {
   DB.reviews.push({ id: uid('rv'), sellerId, productId: pid, buyerId: me().id, rating, body, photos: photos.slice(0, 4), verified: false, hidden: false, ts: Date.now() });
   save(); render(); toast('<b>Review posted.</b> Thanks for the feedback!');
 }
+function storeReviewFormHTML(s) {
+  if (mySeller() && mySeller().id === s.id) return '';
+  if (!me()) return `<div class="panel" style="margin-bottom:1.3rem"><p style="color:var(--ink2)">Sign in to review this seller.</p><button class="btn btn-primary btn-sm" style="margin-top:.7rem" onclick="openAuth()">Sign in</button></div>`;
+  return `<form class="panel review-form" style="margin-bottom:1.4rem" onsubmit="event.preventDefault();submitProductReview(this,'','${s.id}')">
+    <div style="font-weight:700;margin-bottom:.5rem">Review ${esc(s.name)}</div>
+    <div class="star-input" id="rv-stars">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-v="${n}" class="on" onclick="setReviewStars(${n})" aria-label="${n} stars">★</button>`).join('')}</div>
+    <input type="hidden" name="rating" id="rv-rating" value="5">
+    <textarea name="body" required placeholder="How was your experience with this seller — shipping, communication, item accuracy?" style="width:100%;margin-top:.6rem"></textarea>
+    <input type="file" accept="image/*" multiple id="rv-photofile" onchange="reviewPhotoUpload(this)" hidden>
+    <input type="hidden" name="photos" id="rv-photos-val" value="">
+    <div class="brand-row" style="margin-top:.6rem"><button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('rv-photofile').click()">📷 Add photos</button><span class="hint">up to 4</span></div>
+    <div id="rv-photos" class="rv-photos" style="margin-top:.5rem"></div>
+    <button class="btn btn-primary" style="margin-top:.7rem">Post review</button></form>`;
+}
 function setReviewStars(n) { $('#rv-rating').value = n; $$('#rv-stars button').forEach(b => b.classList.toggle('on', +b.dataset.v <= n)); }
 function reviewRow(rv) {
   const u = userById(rv.buyerId);
@@ -547,7 +561,7 @@ function viewStore(seg, q) {
       ${best.length > 1 ? `<div class="section-head"><h2 style="font-size:1.1rem">⭐ Shop best sellers</h2></div><div class="grid grid-products" style="margin-bottom:1.6rem">${best.map(pCard).join('')}</div>` : ''}
       <div class="section-head"><h2 style="font-size:1.1rem">All items</h2></div>
       ${items.length ? `<div class="grid grid-products">${items.map(pCard).join('')}</div>` : '<div class="empty">No items listed right now.</div>'}` : ''}
-    ${tab === 'reviews' ? (reviews.length ? reviewSummary(reviews) + reviews.map(reviewRow).join('') : '<div class="empty">No reviews yet.</div>') : ''}
+    ${tab === 'reviews' ? (reviews.length ? reviewSummary(reviews) : '') + storeReviewFormHTML(s) + (reviews.length ? reviews.map(reviewRow).join('') : '<div class="empty" style="padding:1rem 0">No reviews yet — be the first.</div>') : ''}
     ${tab === 'about' ? `<div class="panel" style="max-width:640px"><p style="color:var(--ink2)">${esc(s.bio)}</p><p style="margin-top:.8rem;font-size:.83rem;color:var(--ink3)">All sales run through IonxSupply checkout with buyer protection. Payouts to sellers via Stripe. <a href="#/legal/refunds">How protection works</a></p></div>` : ''}
   </div>`;
 }
@@ -610,9 +624,16 @@ function viewSell() {
       <h2 style="margin-bottom:.3rem">Apply to sell</h2>
       ${!u ? `<p style="color:var(--ink3);font-size:.9rem;margin-bottom:1rem">Sign in first — takes one click with a demo account.</p><button class="btn btn-primary" onclick="openAuth()">Sign in to apply</button>`
       : mySeller() ? `<p style="color:var(--ink3);font-size:.9rem">You already run <b>${esc(mySeller().name)}</b>. <a href="#/dashboard">Go to your dashboard →</a></p>`
-      : app ? `<div class="notice">⏳ Your application for <b>${esc(app.shop)}</b> is under review.</div>
-        <button class="btn btn-aqua" onclick="demoApprove('${app.id}')">⚡ Demo shortcut: approve it instantly</button>
-        <p style="font-size:.75rem;color:var(--ink3);margin-top:.5rem">In production this is an admin review + Stripe identity/payout onboarding.</p>`
+      : app ? `<div class="verify-flow">
+        <div class="vf-head">⏳ Verifying <b>${esc(app.shop)}</b></div>
+        <div class="vf-steps">
+          <div class="vf-step done"><span class="vf-dot">✓</span><div><b>Application received</b><small>We review inventory quality, honesty &amp; prohibited-item rules</small></div></div>
+          <div class="vf-step active"><span class="vf-dot">2</span><div><b>Identity verification</b><small>Government ID + selfie via Stripe Identity — we never see the documents</small></div></div>
+          <div class="vf-step"><span class="vf-dot">3</span><div><b>Payout setup</b><small>Bank connection &amp; tax info via Stripe Connect (KYC)</small></div></div>
+          <div class="vf-step"><span class="vf-dot">4</span><div><b>Storefront goes live</b><small>Your subdomain, branding and first listing</small></div></div>
+        </div>
+        <button class="btn btn-aqua" onclick="demoApprove('${app.id}')">⚡ Demo shortcut: approve instantly</button>
+        <p style="font-size:.75rem;color:var(--ink3);margin-top:.7rem">In production, steps 2–3 run through Stripe — a scammer can't fake a verified government ID or a real bank account, which is what keeps bad actors out.</p></div>`
       : `<form class="form" onsubmit="event.preventDefault();applySeller(this)">
         <div class="form-row"><div class="field"><label>Shop name</label><input name="shop" required placeholder="Volt Garage" maxlength="30"></div>
         <div class="field"><label>Shop URL <span style="font-weight:400;color:var(--ink3)">(optional)</span></label><input name="slug" pattern="[a-z0-9](-?[a-z0-9])*" placeholder="volt-garage" maxlength="24"><div class="hint">yourname.ionxsupply.example — auto-made from your shop name if left blank</div></div></div>

@@ -412,6 +412,41 @@ input[type=color]{width:46px;height:34px;padding:2px;border:1.5px solid var(--li
 .pd-thumb.on{border-color:var(--navy)}
 .pd-thumb:hover{transform:translateY(-2px)}
 .pd-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ---------- category hover fill animations ---------- */
+.cat-tile{--cat-color:#6b6f76}
+.cat-tile[data-cat=batteries]{--cat-color:#22c55e}
+.cat-tile[data-cat=motors]{--cat-color:#f59e0b}
+.cat-tile[data-cat=controllers]{--cat-color:#3b82f6}
+.cat-tile[data-cat=displays]{--cat-color:#06b6d4}
+.cat-tile[data-cat=brakes]{--cat-color:#ef4444}
+.cat-tile[data-cat=drivetrain]{--cat-color:#f97316}
+.cat-tile[data-cat=wheels]{--cat-color:#475569}
+.cat-tile[data-cat=suspension]{--cat-color:#8b5cf6}
+.cat-tile[data-cat=lights]{--cat-color:#eab308}
+.cat-tile[data-cat=chargers]{--cat-color:#14b8a6}
+.cat-tile[data-cat=security]{--cat-color:#f43f5e}
+.cat-tile[data-cat=accessories]{--cat-color:#ec4899}
+.cat-tile .ic{position:relative;overflow:hidden}
+.cat-tile .ic::before{content:'';position:absolute;inset:0;background:var(--cat-color);transform:translateY(101%);transition:transform .5s var(--ease-lux)}
+.cat-tile .ic svg{position:relative;z-index:1;transition:stroke .3s ease}
+.cat-tile:hover{border-color:var(--cat-color);box-shadow:0 14px 32px -12px var(--cat-color),var(--shadow-sm);transform:translateY(-4px)}
+.cat-tile:hover .ic::before{transform:translateY(0)}
+.cat-tile:hover .ic svg{stroke:#fff}
+.cat-tile:hover b{color:var(--cat-color)}
+
+/* ---------- seller verification stepper ---------- */
+.vf-head{font-weight:700;font-size:1.02rem;margin-bottom:1.1rem}
+.vf-steps{display:flex;flex-direction:column;margin-bottom:1.2rem}
+.vf-step{display:flex;gap:.9rem;align-items:flex-start;padding:.1rem 0 1.1rem;position:relative}
+.vf-step:not(:last-child)::after{content:'';position:absolute;left:15px;top:32px;bottom:0;width:2px;background:var(--line)}
+.vf-step.done:not(:last-child)::after{background:var(--aqua)}
+.vf-dot{width:32px;height:32px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:.82rem;font-weight:700;background:var(--ice);color:var(--ink3);z-index:1}
+.vf-step.done .vf-dot{background:var(--aqua);color:#fff}
+.vf-step.active .vf-dot{background:var(--navy);color:#fff;box-shadow:0 0 0 4px rgba(23,24,26,.12)}
+.vf-step b{font-size:.92rem}
+.vf-step small{display:block;color:var(--ink3);font-size:.8rem;margin-top:.12rem}
+.vf-step.active b{color:var(--navy)}
 .review small{color:var(--ink3);font-size:.75rem}
 
 /* ---------- forms ---------- */
