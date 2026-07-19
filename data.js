@@ -313,7 +313,7 @@ const LEGAL = {
 <h3>Cookies</h3><p>Session cookies for login; no third-party ad trackers, ever.</p>` },
   prohibited: { title: 'Prohibited & Restricted Items', body: `
 <h3>Batteries (restricted)</h3><ul><li>Packs must be UN38.3 tested; UL 2271/2849 listing must be declared in the listing's certification field.</li><li>Ship per DOT/PHMSA rules — ground only where required, proper hazmat marking.</li><li>No damaged, swollen, water-exposed, or recalled packs. No repacked cells sold as OEM.</li></ul>
-<h3>Prohibited outright</h3><ul><li>Stolen goods — serial numbers may be requested; we cooperate with law enforcement.</li><li>Devices marketed to defeat street-legality (speed-limit defeat dongles marketed for road use).</li><li>Counterfeit branded parts, items violating IP, recalled items (CPSC).</li></ul>
+<h3>Prohibited outright</h3><ul><li>Stolen goods — serial numbers may be requested; we cooperate with law enforcement.</li><li>Counterfeit branded parts, items violating IP, recalled items (CPSC).</li></ul>
 <h3>Condition honesty</h3><p>"For parts" items must state why. Undisclosed damage = listing removal on first offense, suspension on second.</p>` },
   refunds: { title: 'Returns, Refunds & Buyer Protection', body: `
 <h3>The window</h3><p>You have 48 hours after delivery to inspect and open a dispute if the item is not as described. Items-not-received qualifies automatically when tracking shows no movement for 10 days.</p>
