@@ -211,13 +211,25 @@ function toggleWish(pid, btn) {
 }
 
 /* ================= views ================= */
+function heroFloats() {
+  const picks = [...visibleProducts()].sort((a, b) => b.sold - a.sold).slice(0, 12).filter((_, i) => i % 2 === 0).slice(0, 6);
+  const slots = [
+    { l: '3%', t: '15%', d: 23, delay: 0, k: 1 },
+    { l: '10%', t: '55%', d: 27, delay: 5, k: 2 },
+    { l: '5%', t: '86%', d: 25, delay: 10, k: 3 },
+    { l: '87%', t: '13%', d: 26, delay: 2.5, k: 3 },
+    { l: '90%', t: '52%', d: 22, delay: 7.5, k: 1 },
+    { l: '84%', t: '84%', d: 28, delay: 12, k: 2 },
+  ];
+  return `<div class="hero-floats" aria-hidden="true">${picks.map((p, i) => { const s = slots[i] || slots[0]; return `<a class="hero-float k${s.k}" href="#/p/${p.id}" tabindex="-1" title="${esc(p.title)} · ${money(p.price)}" style="left:${s.l};top:${s.t};animation-duration:${s.d}s;animation-delay:-${s.delay}s"><span class="hf-inner"><span class="hf-img">${productArt(p)}</span><span class="hf-price">${money(p.price)}</span><span class="hf-go">View →</span></span></a>`; }).join('')}</div>`;
+}
 function viewHome() {
   const pop = [...visibleProducts()].sort((a, b) => b.sold - a.sold).slice(0, 8);
   const fresh = [...visibleProducts()].sort((a, b) => b.ts - a.ts).slice(0, 4);
   const tops = [...DB.sellers].filter(s => s.status === 'active').map(s => ({ s, r: ratingOf(s.id) })).sort((a, b) => b.r.avg - a.r.avg || b.r.count - a.r.count).slice(0, 4);
   const recent = DB.recent.map(productById).filter(p => p && p.qty > 0 && sellerActive(p.sellerId)).slice(0, 4);
   return `
-  <div class="hero"><div class="hero-blob b1"></div><div class="hero-blob b2"></div>
+  <div class="hero"><div class="hero-blob b1"></div><div class="hero-blob b2"></div>${heroFloats()}
     <div class="hero-inner">
       <span class="hero-eyebrow"><span class="dot"></span> ${visibleProducts().length} parts live from ${DB.sellers.filter(s => s.status === 'active').length} verified sellers</span>
       <h1>Every part. Every bike.<br><em>One garage.</em></h1>
