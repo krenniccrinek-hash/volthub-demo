@@ -58,7 +58,7 @@ function seedDB() {
       { id: 'u_rev2', email: 'tyler@demo.com', pw: btoa('demo1234'), name: 'Tyler Moss',  role: 'buyer', wishlist: [], cart: { items: [], codes: {} }, tos: true },
     ],
     sellers: [
-      { id: 's_voltgarage', userId: 'u_seller', slug: 'volt-garage', name: 'Volt Garage', color: SELLER_COLORS.voltgarage,
+      { id: 's_voltgarage', userId: 'u_seller', slug: 'volt-garage', name: 'Volt Garage', color: SELLER_COLORS.voltgarage, website: 'https://voltgarage.example',
         tagline: 'Mid-drives, hub motors & controllers — bench-tested before they ship.',
         bio: 'Austin, TX shop specializing in Bafang and hub-motor builds since 2019. Every used unit is load-tested and photographed on the bench. Ask us about connector matching before you buy.',
         status: 'active', joined: now - 480 * day, verified: true },

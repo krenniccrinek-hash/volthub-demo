@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IonxSupply — redirecting…</title>
+<script>
+  // GitHub Pages serves this for unknown paths. Bounce back into the hash-routed app,
+  // preserving whatever deep path was requested so the in-app 404 can handle it.
+  (function () {
+    var base = location.pathname.replace(/\/[^\/]*$/, '/');
+    var rest = location.pathname.slice(base.length);
+    location.replace(base + (rest ? '#/' + rest : '') + location.search);
+  })();
+</script>
+</head>
+<body>
+<p style="font-family:system-ui,sans-serif;padding:2rem;color:#555">Redirecting to <a href="./">IonxSupply</a>…</p>
+</body>
+</html>

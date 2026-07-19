@@ -45,7 +45,7 @@ const PRESET_GRADIENTS = [
 const gradColors = (str) => { const m = (str || '').match(/#[0-9a-f]{6}/gi); return m && m.length >= 2 ? [m[0], m[1]] : ['#2f3136', '#6b6f76']; };
 
 /* ================= pricing (same contract as the build plan) ================= */
-const FEE_RATE = 0.10, FEE_MIN = 50;
+const FEE_RATE = 0.067, FEE_MIN = 50;
 function priceGroup(items, code) {
   const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
   const shipping = items.reduce((s, i) => s + i.ship * i.qty, 0);
@@ -80,26 +80,64 @@ function parseHash() {
   return { seg, q: new URLSearchParams(qs || '') };
 }
 function go(h) { location.hash = h; }
+let _lastRoute = null;
 function render() {
   const { seg, q } = parseHash();
-  const fn = routes[seg[0] || ''] || viewHome;
+  const fn = routes[seg[0] || ''] || notFound;
+  const routeKey = seg[0] || 'home';
   renderNav(); renderFooter();
   const v = $('#view');
-  v.classList.remove('view-enter'); void v.offsetWidth;
-  v.innerHTML = fn(seg, q) || '';
-  v.classList.add('view-enter');
+  const paint = () => {
+    v.classList.remove('view-enter'); void v.offsetWidth;
+    v.innerHTML = fn(seg, q) || '';
+    v.classList.add('view-enter');
+    revealInit();
+    $$('#view [data-count]').forEach(el => countUp(el, +el.dataset.count, el.dataset.prefix || '', el.dataset.suffix || ''));
+  };
   window.scrollTo({ top: 0 });
-  revealInit();
-  $$('#view [data-count]').forEach(el => countUp(el, +el.dataset.count, el.dataset.prefix || '', el.dataset.suffix || ''));
+  if (routeKey !== _lastRoute) {
+    _lastRoute = routeKey;
+    v.classList.remove('view-enter');
+    v.innerHTML = skeletonFor(routeKey);
+    clearTimeout(render._t);
+    render._t = setTimeout(paint, 300);
+  } else { paint(); }
+}
+function skeletonFor(key) {
+  const cards = (n) => `<div class="grid grid-products">${Array.from({ length: n }).map(() => `<div class="sk-card"><div class="sk sk-img"></div><div class="sk-pad"><div class="sk sk-line w80"></div><div class="sk sk-line w50"></div><div class="sk sk-line w40" style="margin-top:.5rem"></div></div></div>`).join('')}</div>`;
+  const head = `<div class="sk sk-line" style="width:220px;height:26px;margin-bottom:.5rem"></div><div class="sk sk-line" style="width:340px;height:14px;margin-bottom:1.4rem"></div>`;
+  if (key === 'p') return `<div class="wrap"><div class="sk sk-line" style="width:280px;height:12px;margin:1rem 0 1.2rem"></div><div class="pd"><div class="sk" style="aspect-ratio:4/3;border-radius:var(--r-lg)"></div><div><div class="sk sk-line" style="width:70px;height:22px;border-radius:999px;margin-bottom:.9rem"></div><div class="sk sk-line w80" style="height:28px;margin-bottom:.6rem"></div><div class="sk sk-line w50"></div><div class="sk sk-line" style="width:130px;height:36px;margin:1.1rem 0"></div><div class="sk sk-line" style="height:46px;border-radius:12px;margin-bottom:1rem"></div><div class="sk sk-line" style="height:72px;border-radius:var(--r)"></div></div></div></div>`;
+  if (key === 's') return `<div class="wrap"><div class="sk" style="height:172px;border-radius:var(--r-lg);margin-top:1.3rem"></div><div style="display:flex;gap:1.1rem;padding:0 1.4rem;margin-top:-30px"><div class="sk" style="width:92px;height:92px;border-radius:22px;flex:none"></div><div style="flex:1;padding-top:1.7rem"><div class="sk sk-line w50" style="height:22px;margin-bottom:.5rem"></div><div class="sk sk-line w40"></div></div></div><div style="margin-top:1.8rem">${cards(4)}</div></div>`;
+  if (key === 'dashboard' || key === 'admin' || key === 'account') return `<div class="wrap"><div style="display:flex;gap:1rem;align-items:center;margin:1.1rem 0 1.2rem"><div class="sk" style="width:54px;height:54px;border-radius:14px;flex:none"></div><div style="flex:1"><div class="sk sk-line w40" style="height:20px;margin-bottom:.4rem"></div><div class="sk sk-line w50"></div></div></div><div class="stat-grid">${Array.from({ length: 5 }).map(() => `<div class="sk" style="height:88px;border-radius:var(--r)"></div>`).join('')}</div><div class="sk" style="height:210px;border-radius:var(--r);margin-top:1.2rem"></div></div>`;
+  return `<div class="wrap" style="padding-top:1.4rem">${head}${cards(8)}</div>`;
+}
+function initFallingTiles() {
+  const root = document.getElementById('fall-layer'); if (!root) return;
+  const picks = [...visibleProducts()].sort((a, b) => b.ts - a.ts);
+  if (!picks.length) { root.innerHTML = ''; return; }
+  const N = 16; let html = '';
+  for (let i = 0; i < N; i++) {
+    const p = picks[i % picks.length];
+    const left = (i / N) * 94 + 1 + (Math.random() * 3 - 1.5);
+    const dur = 30 + Math.random() * 20;
+    const delay = -Math.random() * dur;
+    const r0 = Math.round(Math.random() * 24 - 12), r1 = r0 + Math.round(Math.random() * 30 - 15);
+    const w = 96 + Math.round(Math.random() * 44);
+    html += `<a class="ft" href="#/p/${p.id}" tabindex="-1" title="${esc(p.title)} · ${money(p.price)}" style="left:${left.toFixed(1)}%;width:${w}px;--r0:${r0}deg;--r1:${r1}deg;animation-duration:${dur.toFixed(1)}s;animation-delay:${delay.toFixed(1)}s"><span class="ft-in"><span class="ft-img">${productArt(p)}</span><span class="ft-price">${money(p.price)}</span><span class="ft-go">View →</span></span></a>`;
+  }
+  root.innerHTML = html;
 }
 window.addEventListener('hashchange', render);
 
 /* ================= nav & footer ================= */
+function logoLockup() {
+  return `<span class="logo-txt">Ion</span><svg class="logo-atom" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" aria-hidden="true"><ellipse cx="50" cy="50" rx="43" ry="15"/><ellipse cx="50" cy="50" rx="43" ry="15" transform="rotate(60 50 50)"/><ellipse cx="50" cy="50" rx="43" ry="15" transform="rotate(120 50 50)"/><circle cx="50" cy="50" r="8" fill="currentColor" stroke="none"/><circle cx="93" cy="50" r="5.5" fill="currentColor" stroke="none"/><circle cx="28.5" cy="87" r="5.5" fill="currentColor" stroke="none"/><circle cx="28.5" cy="13" r="5.5" fill="currentColor" stroke="none"/></svg><span class="logo-txt">Supply</span>`;
+}
 function cartCount() { return cartOf().items.reduce((s, i) => s + i.qty, 0); }
 function renderNav() {
   const u = me(), s = mySeller();
   $('#nav').innerHTML = `<div class="nav"><div class="nav-inner">
-    <a class="logo" href="#/" aria-label="IonxSupply"><span class="logo-txt">Ion</span><svg class="logo-atom" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" aria-hidden="true"><ellipse cx="50" cy="50" rx="43" ry="15"/><ellipse cx="50" cy="50" rx="43" ry="15" transform="rotate(60 50 50)"/><ellipse cx="50" cy="50" rx="43" ry="15" transform="rotate(120 50 50)"/><circle cx="50" cy="50" r="8" fill="currentColor" stroke="none"/><circle cx="93" cy="50" r="5.5" fill="currentColor" stroke="none"/><circle cx="28.5" cy="87" r="5.5" fill="currentColor" stroke="none"/><circle cx="28.5" cy="13" r="5.5" fill="currentColor" stroke="none"/></svg><span class="logo-txt">Supply</span></a>
+    <a class="logo" href="#/" aria-label="IonxSupply"><img class="logo-img" src="img/logo.png" alt="IonxSupply" onerror="this.outerHTML=logoLockup()"></a>
     <nav class="nav-links">
       <a href="#/search">Shop parts</a><a href="#/sellers">Sellers</a><a href="#/sell">Sell on IonxSupply</a>
       ${u && u.role === 'admin' ? '<a href="#/admin">Admin</a>' : ''}
@@ -134,7 +172,7 @@ function mobileMenu() {
 }
 function renderFooter() {
   $('#footer').innerHTML = `<div class="footer"><div class="footer-inner">
-    <div><div class="logo" style="color:#fff" aria-label="IonxSupply"><span class="logo-txt">Ion</span><svg class="logo-atom" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" aria-hidden="true"><ellipse cx="50" cy="50" rx="43" ry="15"/><ellipse cx="50" cy="50" rx="43" ry="15" transform="rotate(60 50 50)"/><ellipse cx="50" cy="50" rx="43" ry="15" transform="rotate(120 50 50)"/><circle cx="50" cy="50" r="8" fill="currentColor" stroke="none"/><circle cx="93" cy="50" r="5.5" fill="currentColor" stroke="none"/><circle cx="28.5" cy="87" r="5.5" fill="currentColor" stroke="none"/><circle cx="28.5" cy="13" r="5.5" fill="currentColor" stroke="none"/></svg><span class="logo-txt">Supply</span></div>
+    <div><div class="logo" style="color:#fff" aria-label="IonxSupply">${logoLockup()}</div>
       <p style="font-size:.84rem;margin-top:.6rem;max-width:270px">The parts market that knows your bike. Verified sellers, fitment-first search, buyer protection.</p>
       <form class="news-input" onsubmit="event.preventDefault();toast('<b>Subscribed!</b> (demo — no emails sent)');this.reset()">
         <input placeholder="Email for drop alerts" type="email" required><button class="btn btn-aqua btn-sm" type="submit">Join</button></form></div>
@@ -197,7 +235,7 @@ function pCard(p) {
     <div class="p-art">${productArt(p)}<span class="sold-tag badge badge-${p.cond}">${condName(p.cond)}</span>
       <button class="wish ${wished ? 'on' : ''}" onclick="event.stopPropagation();toggleWish('${p.id}',this)" aria-label="Save">${icon('heart')}</button></div>
     <div class="p-body"><div class="p-title">${esc(p.title)}</div>
-      <div class="p-meta"><span class="p-seller" onclick="event.stopPropagation();go('#/s/${s.slug}')" title="Visit ${esc(s.name)}">${esc(s.name)}</span> · ${stars(r.avg)} <span>(${r.count})</span></div>
+      <div class="p-meta"><span class="p-seller" onclick="event.stopPropagation();go('#/s/${s.slug}')" title="Visit ${esc(s.name)}">${esc(s.name)}</span>${sellerWebLink(s)} · ${stars(r.avg)} <span>(${r.count})</span></div>
       <div class="p-price-row"><span class="p-price">${money(p.price)}</span><span class="p-ship">${p.ship ? '+' + money(p.ship) + ' ship' : 'Free ship'}</span></div>
     </div></div>`;
 }
@@ -229,7 +267,7 @@ function viewHome() {
   const tops = [...DB.sellers].filter(s => s.status === 'active').map(s => ({ s, r: ratingOf(s.id) })).sort((a, b) => b.r.avg - a.r.avg || b.r.count - a.r.count).slice(0, 4);
   const recent = DB.recent.map(productById).filter(p => p && p.qty > 0 && sellerActive(p.sellerId)).slice(0, 4);
   return `
-  <div class="hero"><div class="hero-blob b1"></div><div class="hero-blob b2"></div>${heroFloats()}
+  <div class="hero"><div class="hero-blob b1"></div><div class="hero-blob b2"></div>
     <div class="hero-inner">
       <span class="hero-eyebrow"><span class="dot"></span> ${visibleProducts().length} parts live from ${DB.sellers.filter(s => s.status === 'active').length} verified sellers</span>
       <h1>Every part. Every bike.<br><em>One garage.</em></h1>
@@ -251,8 +289,8 @@ function viewHome() {
     <section class="section"><div class="section-head reveal"><div><h2>Shop by bike</h2><p>Parts filtered to what actually fits</p></div></div>
       <div class="hero-chips" style="justify-content:flex-start">${BIKES.map(b => `<button class="chip reveal" onclick="go('#/bike/${b.id}')">${b.brand} ${b.model}</button>`).join('')}</div></section>
     <section class="section"><div class="band reveal"><h2>Turn your parts bin into a storefront.</h2>
-      <p>Your own shop at <b>yourname.ionxsupply.example</b>, discount codes, dashboards and payouts — we take 10% only when you sell.</p>
-      <div class="stats"><div><b data-count="${DB.products.reduce((s, p) => s + p.sold, 0)}"></b><span>parts sold</span></div><div><b data-count="${DB.reviews.length}"></b><span>verified reviews</span></div><div><b>10%</b><span>flat fee, listing is free</span></div></div>
+      <p>Your own shop at <b>yourname.ionxsupply.example</b>, discount codes, dashboards and payouts — we take 6.7% only when you sell.</p>
+      <div class="stats"><div><b data-count="${DB.products.reduce((s, p) => s + p.sold, 0)}"></b><span>parts sold</span></div><div><b data-count="${DB.reviews.length}"></b><span>verified reviews</span></div><div><b>6.7%</b><span>flat fee, listing is free</span></div></div>
       <a class="btn btn-aqua btn-lg" href="#/sell">Apply to sell →</a></div></section>
     <section class="section"><div class="section-head reveal"><div><h2>Top-rated sellers</h2></div><a class="see-all" href="#/sellers">Directory →</a></div>
       <div class="grid grid-sellers">${tops.map(({ s, r }) => sCard(s, r)).join('')}</div></section>
@@ -348,6 +386,8 @@ function viewProduct(seg) {
   const suspended = s.status !== 'active';
   const similar = visibleProducts().filter(x => x.cat === p.cat && x.id !== p.id).slice(0, 4);
   const wished = me() && me().wishlist.includes(p.id);
+  const pReviews = DB.reviews.filter(x => x.productId === p.id && !x.hidden).sort((a, b) => b.ts - a.ts);
+  const pAvg = pReviews.length ? pReviews.reduce((t, rv) => t + rv.rating, 0) / pReviews.length : 0;
   return `<div class="wrap">
   <div class="crumb"><a href="#/">Home</a> / <a href="#/search?cat=${p.cat}">${catById(p.cat)?.name}</a> / ${esc(p.title.slice(0, 40))}…</div>
   <div class="pd">
@@ -367,7 +407,7 @@ function viewProduct(seg) {
       </div>`}
       <div class="seller-box" onclick="go('#/s/${s.slug}')">
         <div class="s-logo" style="background:${sellerLogoBg(s)};width:44px;height:44px;font-size:.9rem">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
-        <div style="flex:1"><div class="s-name">${esc(s.name)} ${s.verified ? `<span class="badge badge-verified">${icon('check')} Verified</span>` : ''}</div>
+        <div style="flex:1"><div class="s-name">${esc(s.name)} ${s.verified ? `<span class="badge badge-verified">${icon('check')} Verified</span>` : ''}${sellerWebLink(s)}</div>
           <div class="rating-line">${stars(r.avg)} ${r.count} reviews · ${timeAgo(s.joined).replace(' ago', '')} on IonxSupply</div></div>
         <span class="see-all">Visit shop →</span></div>
       <h3 style="margin:1.1rem 0 .2rem;font-size:1rem">Specs</h3>
@@ -380,8 +420,35 @@ function viewProduct(seg) {
       ${p.cat === 'batteries' ? `<div class="notice">🔋 Lithium battery: ships ground per DOT rules. Certification: <b>${esc(p.specs['Certification'] || 'not declared')}</b>. <a href="#/legal/prohibited">Battery policy</a></div>` : ''}
       <div class="protect">${icon('shield')}<div><b>IonxSupply Buyer Protection.</b> Payment held by the platform, released to the seller on fulfillment. Not as described? <a href="#/legal/refunds">Open a dispute</a> within 48h of delivery.</div></div>
     </div></div>
+  <section class="section" id="reviews">
+    <div class="section-head"><div><h2>Reviews (${pReviews.length})</h2>${pReviews.length ? `<p>${stars(pAvg)} ${pAvg.toFixed(1)} average for this part</p>` : ''}</div></div>
+    ${reviewFormHTML(p)}
+    <div class="reviews-list">${pReviews.length ? pReviews.map(reviewRow).join('') : '<div class="empty" style="padding:1.4rem 0"><p>No reviews yet — be the first to review this part.</p></div>'}</div>
+  </section>
   ${similar.length ? `<section class="section"><div class="section-head"><h2>Similar parts</h2></div><div class="grid grid-products">${similar.map(pCard).join('')}</div></section>` : ''}
   </div>`;
+}
+function reviewFormHTML(p) {
+  if (mySeller() && mySeller().id === p.sellerId) return '<div class="notice" style="margin-bottom:1rem">This is your shop — you can\'t review your own listing.</div>';
+  if (!me()) return `<div class="panel" style="margin-bottom:1.3rem"><p style="color:var(--ink2)">Sign in to leave a review on this part.</p><button class="btn btn-primary btn-sm" style="margin-top:.7rem" onclick="openAuth()">Sign in</button></div>`;
+  return `<form class="panel review-form" style="margin-bottom:1.4rem" onsubmit="event.preventDefault();submitProductReview(this,'${p.id}','${p.sellerId}')">
+    <div style="font-weight:700;margin-bottom:.5rem">Write a review</div>
+    <div class="star-input" id="rv-stars">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-v="${n}" class="on" onclick="setReviewStars(${n})" aria-label="${n} stars">★</button>`).join('')}</div>
+    <input type="hidden" name="rating" id="rv-rating" value="5">
+    <textarea name="body" required placeholder="How was the part? Fit, quality, shipping…" style="width:100%;margin-top:.6rem"></textarea>
+    <button class="btn btn-primary" style="margin-top:.7rem">Post review</button></form>`;
+}
+function submitProductReview(f, pid, sellerId) {
+  if (!requireAuth()) return;
+  const rating = Math.max(1, Math.min(5, parseInt(f.rating.value) || 5));
+  const body = f.body.value.trim(); if (!body) return;
+  DB.reviews.push({ id: uid('rv'), sellerId, productId: pid, buyerId: me().id, rating, body, verified: false, hidden: false, ts: Date.now() });
+  save(); render(); toast('<b>Review posted.</b> Thanks for the feedback!');
+}
+function setReviewStars(n) { $('#rv-rating').value = n; $$('#rv-stars button').forEach(b => b.classList.toggle('on', +b.dataset.v <= n)); }
+function reviewRow(rv) {
+  const u = userById(rv.buyerId);
+  return `<div class="review"><div class="review-head"><span class="avatar">${esc((u?.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2))}</span><b style="font-size:.9rem">${esc(u?.name || 'Buyer')}</b> ${stars(rv.rating)} <small>· ${rv.verified === false ? '' : 'verified purchase · '}${timeAgo(rv.ts)}</small></div><p>${esc(rv.body)}</p></div>`;
 }
 function pdQty(d, max) { const el = $('#pdq'); el.textContent = Math.max(1, Math.min(max, +el.textContent + d)); }
 
@@ -401,12 +468,11 @@ function viewStore(seg, q) {
     <div class="store-head">
       <div class="store-logo" style="background:${sellerLogoBg(s)}">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
       <div class="store-id">
-        <h1 class="store-name">${esc(s.name)} ${s.verified ? `<span class="badge badge-verified">${icon('check')} Verified seller</span>` : ''}</h1>
+        <h1 class="store-name">${esc(s.name)} ${s.verified ? `<span class="badge badge-verified">${icon('check')} Verified seller</span>` : ''}${sellerWebLink(s)}</h1>
         <div class="rating-line">${stars(r.avg)} <b>${r.avg ? r.avg.toFixed(1) : 'New'}</b> (${r.count} reviews) · ${items.length} items · joined ${timeAgo(s.joined)}</div>
         <div class="store-domain">🌐 ${s.slug}.ionxsupply.example <span style="opacity:.6">(seller subdomains — live in the real build)</span></div>
       </div>
       <div class="store-actions"><button class="btn btn-danger btn-sm" onclick="openReport('${s.id}')">${icon('flag')} Report seller</button></div></div>
-    ${codes.length ? `<div class="code-banner">🎟️ <b>Shop codes:</b> ${codes.map(c => `<button class="code-tag" onclick="navigator.clipboard&&navigator.clipboard.writeText('${c.code}');toast('<b>${c.code}</b> copied — paste it at checkout.')">${c.code}</button> <span style="color:var(--ink3)">${c.type === 'percent' ? c.value + '% off' : money(c.value) + ' off'}${c.min ? ' over ' + money(c.min) : ''}</span>`).join(' · ')}</div>` : ''}
     <div class="tabs">
       <button class="${tab === 'items' ? 'active' : ''}" onclick="go('#/s/${s.slug}?tab=items')">Items (${items.length})</button>
       <button class="${tab === 'reviews' ? 'active' : ''}" onclick="go('#/s/${s.slug}?tab=reviews')">Reviews (${reviews.length})</button>
@@ -457,17 +523,17 @@ function viewSell() {
   <div class="step-cards reveal">
     <div class="step-card"><div class="num">1</div><b>Apply in 2 minutes</b><p>Tell us what you sell. We review every application — that's why buyers trust the marketplace.</p></div>
     <div class="step-card"><div class="num">2</div><b>Verify & connect payouts</b><p>Stripe identity check + bank connection. You're the merchant; we handle checkout and protection.</p></div>
-    <div class="step-card"><div class="num">3</div><b>List & sell</b><p>Photos, specs, fitment tags, your own codes. Listing is free — we take 10% only when you sell.</p></div></div>
+    <div class="step-card"><div class="num">3</div><b>List & sell</b><p>Photos, specs, fitment tags, your own codes. Listing is free — we take 6.7% only when you sell.</p></div></div>
   <section class="section"><div class="browse cols-even">
     <div class="fee-calc reveal"><h3 style="margin-bottom:.3rem">What you'd keep</h3><p style="font-size:.85rem;color:var(--ink3)">Drag your monthly parts sales:</p>
       <input type="range" min="100" max="10000" value="1500" step="100" oninput="feeCalc(this.value)">
       <div class="fee-out"><span>Monthly sales</span><b id="fc-gross">$1,500</b></div>
-      <div class="fee-out"><span>IonxSupply fee (10%)</span><b id="fc-fee">−$150</b></div>
-      <div class="fee-out" style="border-top:1.5px solid var(--line);padding-top:.5rem"><span>You keep</span><b id="fc-net" style="color:var(--aqua-deep)">$1,350</b></div>
+      <div class="fee-out"><span>IonxSupply fee (6.7%)</span><b id="fc-fee">−$101</b></div>
+      <div class="fee-out" style="border-top:1.5px solid var(--line);padding-top:.5rem"><span>You keep</span><b id="fc-net" style="color:var(--aqua-deep)">$1,399</b></div>
       <p style="font-size:.75rem;color:var(--ink3);margin-top:.6rem">Payment processing included. No listing fees, no monthly fees.</p></div>
     <div class="accordion reveal">${[
       ['Who can sell?', 'Individuals and shops, 18+. We review every application for inventory quality and honesty — takeoff parts, used gear and rebuilt components are all welcome if graded honestly.'],
-      ['How do payouts work?', 'Through Stripe Connect. Money from each sale (minus the 10% fee) transfers to your bank on a rolling schedule after fulfillment.'],
+      ['How do payouts work?', 'Through Stripe Connect. Money from each sale (minus the 6.7% fee) transfers to your bank on a rolling schedule after fulfillment.'],
       ['Can I sell batteries?', 'Yes, with rules: UN38.3 documentation, declared certification status, ground shipping. Read the battery policy before applying.'],
       ['What about scam protection?', 'Cuts both ways. Buyers get dispute mediation; sellers with tracking and honest photos win not-as-described claims. Repeat bad actors get suspended.'],
       ['Do I really get my own subdomain?', 'Yes — yourshop.ionxsupply.example (simulated in this demo, real wildcard domains in production). Your storefront, your branding, your codes.'],
@@ -483,7 +549,8 @@ function viewSell() {
         <p style="font-size:.75rem;color:var(--ink3);margin-top:.5rem">In production this is an admin review + Stripe identity/payout onboarding.</p>`
       : `<form class="form" onsubmit="event.preventDefault();applySeller(this)">
         <div class="form-row"><div class="field"><label>Shop name</label><input name="shop" required placeholder="Volt Garage" maxlength="30"></div>
-        <div class="field"><label>Shop URL</label><input name="slug" required pattern="[a-z0-9](-?[a-z0-9])*" placeholder="volt-garage" maxlength="24"><div class="hint">yourname.ionxsupply.example</div></div></div>
+        <div class="field"><label>Shop URL <span style="font-weight:400;color:var(--ink3)">(optional)</span></label><input name="slug" pattern="[a-z0-9](-?[a-z0-9])*" placeholder="volt-garage" maxlength="24"><div class="hint">yourname.ionxsupply.example — auto-made from your shop name if left blank</div></div></div>
+        <div class="field"><label>Your website <span style="font-weight:400;color:var(--ink3)">(optional)</span></label><input name="website" placeholder="https://your-shop.com"><div class="hint">Shown as a link next to your shop on every listing.</div></div>
         <div class="field"><label>What do you sell?</label><textarea name="pitch" required placeholder="Inventory, experience, links to past sales…"></textarea></div>
         <label class="check-line"><input type="checkbox" required> I've read the <a href="#/legal/prohibited">Prohibited Items policy</a> (especially batteries) and agree to the <a href="#/legal/tos">Seller Terms</a>.</label>
         <div id="apply-err"></div>
@@ -492,13 +559,19 @@ function viewSell() {
 }
 function feeCalc(v) {
   $('#fc-gross').textContent = '$' + (+v).toLocaleString();
-  $('#fc-fee').textContent = '−$' + Math.round(v * .10).toLocaleString();
-  $('#fc-net').textContent = '$' + Math.round(v * .90).toLocaleString();
+  $('#fc-fee').textContent = '−$' + Math.round(v * .067).toLocaleString();
+  $('#fc-net').textContent = '$' + (+v - Math.round(v * .067)).toLocaleString();
+}
+function slugify(str) { return (str || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 24); }
+function normWebsite(u) { u = (u || '').trim(); if (!u) return null; return /^https?:\/\//i.test(u) ? u : 'https://' + u; }
+function sellerWebLink(s) {
+  if (!s || !s.website) return '';
+  return ` <a class="seller-web" href="${esc(s.website)}" target="_blank" rel="noopener nofollow" onclick="event.stopPropagation()" title="${esc(s.name)}'s website — ${esc(s.website)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg></a>`;
 }
 function applySeller(f) {
-  const slug = f.slug.value.toLowerCase();
-  if (DB.sellers.some(s => s.slug === slug) || ['www', 'app', 'api', 'admin', 'shop'].includes(slug)) { $('#apply-err').innerHTML = '<div class="form-err">That shop URL is taken or reserved.</div>'; return; }
-  DB.applications.push({ id: uid('a'), userId: me().id, shop: f.shop.value, slug, pitch: f.pitch.value, status: 'pending', ts: Date.now() });
+  let slug = slugify(f.slug.value) || slugify(f.shop.value) || ('shop-' + Math.random().toString(36).slice(2, 6));
+  if (DB.sellers.some(s => s.slug === slug) || DB.applications.some(a => a.slug === slug && a.status === 'pending') || ['www', 'app', 'api', 'admin', 'shop'].includes(slug)) { $('#apply-err').innerHTML = '<div class="form-err">That shop URL is taken or reserved — try another, or leave it blank to auto-generate.</div>'; return; }
+  DB.applications.push({ id: uid('a'), userId: me().id, shop: f.shop.value, slug, website: normWebsite(f.website && f.website.value), pitch: f.pitch.value, status: 'pending', ts: Date.now() });
   save(); render(); toast('<b>Application submitted!</b> Watch for the demo-approve shortcut.');
 }
 function demoApprove(appId) { approveApplication(appId, true); go('#/dashboard'); }
@@ -507,7 +580,7 @@ function approveApplication(appId, self = false) {
   a.status = 'approved'; a.decidedTs = Date.now();
   const u = userById(a.userId);
   const colors = Object.values(SELLER_COLORS);
-  const s = { id: uid('s'), userId: u.id, slug: a.slug, name: a.shop, color: colors[Math.floor(Math.random() * colors.length)], tagline: 'New on IonxSupply — say hi!', bio: a.pitch, status: 'active', joined: Date.now(), verified: true };
+  const s = { id: uid('s'), userId: u.id, slug: a.slug, name: a.shop, color: colors[Math.floor(Math.random() * colors.length)], tagline: 'New on IonxSupply — say hi!', bio: a.pitch, website: a.website || null, status: 'active', joined: Date.now(), verified: true };
   DB.sellers.push(s); u.role = u.role === 'admin' ? 'admin' : 'seller'; u.sellerId = s.id; save();
   toast(self ? `<b>${esc(a.shop)} is live!</b> Stripe onboarding simulated ✓ — list your first part.` : `Approved <b>${esc(a.shop)}</b>.`);
 }
@@ -664,7 +737,7 @@ function viewSuccess(seg) {
     <p style="margin:.4rem 0 1.4rem">${orders.length > 1 ? `One payment of <b>${money(total)}</b>, split across ${orders.length} sellers.` : `<b>${money(total)}</b> paid.`} Confirmation "sent" to ${esc(me().email)} (demo).</p></div>
     ${orders.map(o => `<div class="cart-group"><div class="cart-group-head"><b><a href="#/s/${sellerById(o.sellerId).slug}" style="color:inherit">${esc(sellerById(o.sellerId).name)}</a></b><span class="badge badge-verified" style="margin-left:auto">Paid</span></div>
       ${o.items.map(i => `<div class="cart-line" style="border:none;padding:.35rem 0"><span style="flex:1;font-size:.9rem">${i.qty}× ${esc(i.title)}</span><b>${money(i.price * i.qty)}</b></div>`).join('')}
-      <div class="totals">${o.discount ? `<div class="row disc"><span>Discount</span><span>−${money(o.discount)}</span></div>` : ''}<div class="row"><span>Seller receives (after 10% fee)</span><span>${money(o.total - o.fee)}</span></div></div></div>`).join('')}
+      <div class="totals">${o.discount ? `<div class="row disc"><span>Discount</span><span>−${money(o.discount)}</span></div>` : ''}<div class="row"><span>Seller receives (after 6.7% fee)</span><span>${money(o.total - o.fee)}</span></div></div></div>`).join('')}
     <div style="display:flex;gap:.7rem;justify-content:center;margin-top:1.2rem"><a class="btn btn-primary" href="#/orders">Track my orders</a><a class="btn btn-outline" href="#/search">Keep shopping</a></div></div>`;
 }
 
@@ -761,9 +834,10 @@ function viewDashboard(seg, q) {
   const myP = DB.products.filter(p => p.sellerId === s.id);
   const myO = DB.orders.filter(o => o.sellerId === s.id).sort((a, b) => b.ts - a.ts);
   const myC = DB.codes.filter(c => c.sellerId === s.id);
+  const myR = DB.reviews.filter(x => x.sellerId === s.id && !x.hidden).sort((a, b) => b.ts - a.ts);
   const rev = myO.filter(o => ['paid', 'shipped', 'delivered'].includes(o.status)).reduce((t, o) => t + o.total - o.fee, 0);
   const r = ratingOf(s.id);
-  const tabs = [['overview', 'Overview'], ['products', `Products (${myP.length})`], ['codes', `Codes (${myC.length})`], ['orders', `Orders (${myO.length})`], ['settings', 'Settings']];
+  const tabs = [['overview', 'Overview'], ['products', `Products (${myP.length})`], ['codes', `Codes (${myC.length})`], ['orders', `Orders (${myO.length})`], ['reviews', `Reviews (${myR.length})`], ['settings', 'Settings']];
   return `<div class="wrap"><div class="page-head" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
     <div class="s-logo" style="background:${sellerLogoBg(s)};width:54px;height:54px">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
     <div style="flex:1"><h1 style="font-size:1.4rem">${esc(s.name)}</h1><p>${s.slug}.ionxsupply.example · <a href="#/s/${s.slug}">view public storefront →</a></p></div>
@@ -771,7 +845,7 @@ function viewDashboard(seg, q) {
   <div class="side-tabs">${tabs.map(([v, n]) => `<button class="${tab === v ? 'active' : ''}" onclick="go('#/dashboard?tab=${v}')">${n}</button>`).join('')}</div>
   ${tab === 'overview' ? `
     <div class="stat-grid">
-      <div class="stat"><b data-count="${Math.round(rev / 100)}" data-prefix="$"></b><span>Net revenue (after 10% fee)</span></div>
+      <div class="stat"><b data-count="${Math.round(rev / 100)}" data-prefix="$"></b><span>Net revenue (after 6.7% fee)</span></div>
       <div class="stat"><b data-count="${myO.length}"></b><span>Orders</span></div>
       <div class="stat"><b data-count="${myP.reduce((t, p) => t + p.sold, 0)}"></b><span>Items sold</span></div>
       <div class="stat"><b>${r.avg ? r.avg.toFixed(1) + '★' : '—'}</b><span>${r.count} reviews</span></div>
@@ -789,12 +863,14 @@ function viewDashboard(seg, q) {
       ${myC.map(c => { const dead = !c.active || (c.expires && c.expires < Date.now()) || (c.max != null && c.uses >= c.max);
         return `<tr><td><b>${c.code}</b></td><td>${c.type === 'percent' ? c.value + '%' : money(c.value)}</td><td>${c.min ? money(c.min) : '—'}</td>
         <td>${c.uses}${c.max != null ? '/' + c.max : ''}</td><td>${dead ? '<span class="badge badge-gray">inactive</span>' : '<span class="badge badge-verified">live</span>'}</td>
-        <td><button class="btn btn-ghost btn-sm" onclick="toggleCode('${c.id}')">${c.active ? 'Disable' : 'Enable'}</button></td></tr>`; }).join('') || '<tr><td colspan="6" style="color:var(--ink3)">No codes yet — codes show on your storefront banner.</td></tr>'}</table></div>` : ''}
+        <td><button class="btn btn-ghost btn-sm" onclick="toggleCode('${c.id}')">${c.active ? 'Disable' : 'Enable'}</button></td></tr>`; }).join('') || '<tr><td colspan="6" style="color:var(--ink3)">No codes yet — private promo codes you share yourself.</td></tr>'}</table></div>` : ''}
   ${tab === 'orders' ? `<div class="panel tbl-wrap">${myO.length ? sellerOrderRows(myO) : '<p style="color:var(--ink3)">No orders yet.</p>'}</div>` : ''}
+  ${tab === 'reviews' ? `<div class="panel"><div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.8rem"><h2 style="font-size:1.15rem">Customer reviews</h2>${myR.length ? `<span class="rating-line">${stars(r.avg)} <b>${r.avg.toFixed(1)}</b> · ${myR.length} total</span>` : ''}</div>${myR.length ? myR.map(rv => { const prod = rv.productId ? productById(rv.productId) : null; const u = userById(rv.buyerId); return `<div class="review"><div class="review-head"><span class="avatar">${esc((u?.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2))}</span><b style="font-size:.9rem">${esc(u?.name || 'Buyer')}</b> ${stars(rv.rating)} <small>· ${rv.verified === false ? '' : 'verified purchase · '}${timeAgo(rv.ts)}</small></div>${prod ? `<div style="font-size:.78rem;color:var(--ink3);margin:.1rem 0 .35rem">on <a href="#/p/${prod.id}">${esc(prod.title.slice(0, 52))}</a></div>` : ''}<p>${esc(rv.body)}</p></div>`; }).join('') : '<p style="color:var(--ink3)">No reviews yet — they will appear here as buyers leave them.</p>'}</div>` : ''}
   ${tab === 'settings' ? brandEditorHTML(s) + `<div class="panel" style="max-width:560px"><form class="form" onsubmit="event.preventDefault();saveShop(this)">
     <div class="field"><label>Shop name</label><input name="name" value="${esc(s.name)}" required></div>
     <div class="field"><label>Tagline</label><input name="tagline" value="${esc(s.tagline)}" maxlength="80"></div>
     <div class="field"><label>About</label><textarea name="bio">${esc(s.bio)}</textarea></div>
+    <div class="field"><label>Your website <span style="font-weight:400;color:var(--ink3)">(optional)</span></label><input name="website" value="${s.website ? esc(s.website) : ''}" placeholder="https://your-shop.com"><div class="hint">Shows as a link on all your listings.</div></div>
     <div class="field"><label>Shop URL</label><input value="${s.slug}.ionxsupply.example" disabled><div class="hint">Subdomain is locked after approval (production: wildcard DNS under our domain).</div></div>
     <button class="btn btn-primary">Save settings</button></form></div>` : ''}
   </div>`;
@@ -818,7 +894,7 @@ function doShip(f, oid) {
   o.status = 'shipped'; o.shippedTs = Date.now(); o.tracking = f.carrier.value + ' ' + f.tn.value;
   save(); closeModal(); render(); toast('<b>Shipped ✓</b> Buyer notified (demo).');
 }
-function saveShop(f) { const s = mySeller(); s.name = f.name.value; s.tagline = f.tagline.value; s.bio = f.bio.value; save(); render(); toast('Shop settings saved.'); }
+function saveShop(f) { const s = mySeller(); s.name = f.name.value; s.tagline = f.tagline.value; s.bio = f.bio.value; s.website = normWebsite(f.website && f.website.value); save(); render(); toast('Shop settings saved.'); }
 
 /* ---------- storefront branding editor ---------- */
 function brandEditorHTML(s) {
@@ -943,7 +1019,13 @@ function openProductForm(pid) {
     <div class="field"><label>Shipping ($, 0 = free)</label><input name="ship" type="number" step="0.01" min="0" required value="${p ? (p.ship / 100).toFixed(2) : '0'}"></div></div>
     <div class="form-row"><div class="field"><label>Quantity</label><input name="qty" type="number" min="0" required value="${p ? p.qty : 1}"></div>
     <div class="field"><label>Brand</label><input name="brand" value="${p ? esc(p.brand) : ''}"></div></div>
-    <div class="field"><label>Photo URL <span style="font-weight:400;color:var(--ink3)">(optional — we generate clean part art if empty)</span></label><input name="img" value="${p && p.img ? esc(p.img) : ''}" placeholder="https://…jpg"></div>
+    <div class="field"><label>Photo <span style="font-weight:400;color:var(--ink3)">(optional — we generate clean part art if empty)</span></label>
+      <div class="brand-row" style="margin-bottom:.45rem">
+        <input type="file" accept="image/*" id="pf-file" onchange="productPhotoUpload(this)" hidden>
+        <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('pf-file').click()">⬆ Upload from computer</button>
+        <img id="pf-prev" src="${p && p.img ? esc(p.img) : ''}" alt="" style="${p && p.img ? '' : 'display:none;'}height:42px;border-radius:8px;border:1px solid var(--line);object-fit:cover">
+      </div>
+      <input name="img" value="${p && p.img ? esc(p.img) : ''}" placeholder="…or paste an image URL" oninput="var pv=document.getElementById('pf-prev');pv.src=this.value;pv.style.display=this.value?'':'none'"></div>
     <div class="field"><label>Specs (electrical compatibility sells parts)</label>
       ${specs.slice(0, 4).map(([k, v], i) => `<div class="form-row" style="margin-bottom:.4rem"><input name="sk${i}" placeholder="Voltage" value="${esc(k)}"><input name="sv${i}" placeholder="52V" value="${esc(v)}"></div>`).join('')}</div>
     <div class="field"><label>Fits which bikes?</label>
@@ -969,9 +1051,30 @@ function saveProduct(f, pid) {
   };
   if (pid) Object.assign(productById(pid), base);
   else DB.products.push({ id: uid('p'), sellerId: s.id, sold: 0, views: 0, ts: Date.now(), ...base });
-  save(); closeModal(); render(); toast(pid ? 'Listing updated.' : '<b>Listing live!</b> It\'s now searchable market-wide.');
+  save(); closeModal(); render(); initFallingTiles(); toast(pid ? 'Listing updated.' : '<b>Listing live!</b> It\'s now searchable market-wide.');
 }
 function delProduct(pid) { if (!confirm('Remove this listing?')) return; DB.products = DB.products.filter(p => p.id !== pid); save(); render(); toast('Listing removed.'); }
+function productPhotoUpload(input) {
+  const file = input.files && input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, 1000 / img.width);
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * scale); cv.height = Math.round(img.height * scale);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      let data; try { data = cv.toDataURL('image/jpeg', 0.82); } catch (err) { data = e.target.result; }
+      const form = input.closest('form');
+      if (form && form.img) form.img.value = data;
+      const pv = document.getElementById('pf-prev'); if (pv) { pv.src = data; pv.style.display = ''; }
+      toast('Photo added — publish to save it.');
+    };
+    img.onerror = () => toast('Could not read that image.', 'err');
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 function openCodeForm() {
   modal(`${modalHead('New discount code')}<div class="modal-body"><form class="form" onsubmit="event.preventDefault();saveCode(this)">
     <div class="form-row"><div class="field"><label>Code</label><input name="code" required maxlength="16" placeholder="SUMMER10" style="text-transform:uppercase"></div>
@@ -979,13 +1082,13 @@ function openCodeForm() {
     <div class="form-row"><div class="field"><label>Value</label><input name="value" type="number" min="1" required placeholder="10"></div>
     <div class="field"><label>Min order ($, optional)</label><input name="min" type="number" min="0" value="0"></div></div>
     <div class="field"><label>Max uses (blank = unlimited)</label><input name="max" type="number" min="1"></div>
-    <button class="btn btn-primary">Create code</button><p style="font-size:.75rem;color:var(--ink3)">Live codes show on your storefront banner automatically.</p></form></div>`);
+    <button class="btn btn-primary">Create code</button><p style="font-size:.75rem;color:var(--ink3)">Codes stay private — share them in your own promos. They still work at checkout.</p></form></div>`);
 }
 function saveCode(f) {
   const s = mySeller(); const type = f.type.value;
   const value = type === 'percent' ? Math.min(100, +f.value.value) : Math.round(parseFloat(f.value.value) * 100);
   DB.codes.push({ id: uid('c'), sellerId: s.id, code: f.code.value.toUpperCase(), type, value, min: Math.round((+f.min.value || 0) * 100), max: f.max.value ? +f.max.value : null, uses: 0, expires: null, active: true });
-  save(); closeModal(); render(); toast(`<b>${f.code.value.toUpperCase()}</b> is live on your storefront.`);
+  save(); closeModal(); render(); toast(`<b>${f.code.value.toUpperCase()}</b> is live — share it in your promos.`);
 }
 function toggleCode(cid) { const c = DB.codes.find(x => x.id === cid); c.active = !c.active; save(); render(); }
 
@@ -1051,7 +1154,12 @@ function viewLegal(seg) {
     <div class="panel">${page.body}</div>
     <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem">${Object.entries(LEGAL).map(([k, v]) => `<a class="chip" href="#/legal/${k}">${v.title}</a>`).join('')}</div></div></div>`;
 }
-function notFound() { return `<div class="wrap"><div class="empty"><div class="big">🤷</div><b>That page doesn't exist.</b><p><a href="#/">Back home →</a></p></div></div>`; }
+function notFound() {
+  return `<div class="wrap"><div class="empty" style="padding-top:3.5rem"><div class="big">🤷</div><b>That page doesn't exist.</b>
+    <p>The link may be broken, or the listing was removed.</p>
+    <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:1.1rem"><a class="btn btn-primary" href="#/">← Back home</a><a class="btn btn-outline" href="#/search">Browse all parts</a></div></div></div>`;
+}
 
 /* ================= boot ================= */
 render();
+initFallingTiles();
