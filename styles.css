@@ -277,6 +277,39 @@ input,select,textarea{font:inherit;color:var(--ink)}
 .code-tag{background:#fff;border:1px solid var(--aqua);color:var(--aqua-deep);font-weight:700;font-family:'Sora';padding:.2rem .6rem;border-radius:8px;font-size:.8rem;cursor:pointer;transition:all .15s}
 .code-tag:hover{background:var(--aqua);color:#fff}
 
+/* ---------- storefront accent theming (per-shop --shop-accent) ---------- */
+.store-scope .tabs button.active{color:var(--shop-accent,var(--navy));border-color:var(--shop-accent,var(--aqua))}
+.store-scope .see-all{color:var(--shop-accent,var(--aqua-deep))}
+.store-scope .code-banner{border-color:var(--shop-accent,var(--aqua))}
+.store-scope .code-tag{border-color:var(--shop-accent,var(--aqua));color:var(--shop-accent,var(--aqua-deep))}
+.store-scope .code-tag:hover{background:var(--shop-accent,var(--aqua));color:#fff}
+
+/* ---------- branding editor ---------- */
+.brand-editor h3{font-family:'Sora'}
+.brand-preview{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:1.3rem;background:#fff}
+.bp-banner{height:124px;position:relative;overflow:hidden}
+.brand-preview .bp-head{display:flex;align-items:flex-start;gap:.9rem;padding:.7rem 1rem 1rem}
+.bp-logo{width:64px;height:64px;border-radius:16px;display:grid;place-items:center;font-family:'Sora';font-weight:800;font-size:1.3rem;color:#fff;border:4px solid #fff;box-shadow:var(--shadow-sm);flex:none;margin-top:-38px}
+.bp-id{padding-top:.15rem;min-width:0}
+.bp-name{font-family:'Sora';font-weight:800;font-size:1.1rem;color:var(--navy);display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;line-height:1.15}
+.bp-sub{display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--ink3);margin-top:.3rem;flex-wrap:wrap}
+.bp-accent-chip{background:var(--shop-accent,var(--aqua-deep));color:#fff;font-weight:600;font-size:.72rem;padding:.14rem .55rem;border-radius:999px}
+.brand-controls{display:flex;flex-direction:column;gap:1.2rem}
+.brand-block{display:flex;flex-direction:column;gap:.55rem}
+.brand-lbl{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);font-weight:700}
+.brand-lbl .hint{text-transform:none;letter-spacing:0;font-weight:400;font-size:.8rem}
+.seg{display:inline-flex;background:var(--ice);border-radius:10px;padding:3px;gap:2px;width:max-content}
+.seg button{padding:.35rem .95rem;border-radius:8px;font-size:.83rem;font-weight:600;color:var(--ink2);transition:all .15s}
+.seg button.on{background:#fff;color:var(--navy);box-shadow:var(--shadow-sm)}
+.swatch-row{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.3rem}
+.swatch{width:38px;height:38px;border-radius:10px;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer;transition:transform .15s}
+.swatch:hover{transform:scale(1.12)}
+.brand-row{display:flex;align-items:center;gap:.85rem;flex-wrap:wrap}
+.color-lbl{display:inline-flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--ink2)}
+input[type=color]{width:46px;height:34px;padding:2px;border:1.5px solid var(--line);border-radius:8px;background:#fff;cursor:pointer}
+.brand-url{width:100%;max-width:360px;padding:.45rem .6rem;border:1.5px solid var(--line);border-radius:9px;font-size:.85rem;background:var(--bg);outline:none}
+.brand-url:focus{border-color:var(--aqua)}
+
 /* reviews */
 .review{border-bottom:1px solid var(--line);padding:1rem 0}
 .review-head{display:flex;align-items:center;gap:.6rem;margin-bottom:.3rem}

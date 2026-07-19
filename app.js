@@ -33,6 +33,17 @@ function ratingOf(sellerId) {
 const sellerActive = (id) => { const s = sellerById(id); return s && s.status === 'active'; };
 const visibleProducts = () => DB.products.filter(p => p.qty > 0 && sellerActive(p.sellerId));
 
+/* ---------- storefront branding ---------- */
+const sellerBannerBg = (s) => s.banner ? `url('${s.banner}') center/cover no-repeat` : s.color;
+const sellerLogoBg = (s) => s.accent || s.color;
+const PRESET_GRADIENTS = [
+  'linear-gradient(135deg,#123a6b,#2f7ed8)', 'linear-gradient(135deg,#0ea48a,#19c8a8)',
+  'linear-gradient(135deg,#141b23,#42566d)', 'linear-gradient(135deg,#b3541e,#e8a13c)',
+  'linear-gradient(135deg,#155e75,#8ecdf7)', 'linear-gradient(135deg,#4a3fc0,#8f7ff0)',
+  'linear-gradient(135deg,#8a1c3b,#e0567e)', 'linear-gradient(135deg,#1f6f4a,#54c98a)',
+];
+const gradColors = (str) => { const m = (str || '').match(/#[0-9a-f]{6}/gi); return m && m.length >= 2 ? [m[0], m[1]] : ['#123a6b', '#2f7ed8']; };
+
 /* ================= pricing (same contract as the build plan) ================= */
 const FEE_RATE = 0.10, FEE_MIN = 50;
 function priceGroup(items, code) {
@@ -240,7 +251,7 @@ function viewHome() {
 }
 function sCard(s, r) {
   return `<div class="card s-card reveal" onclick="go('#/s/${s.slug}')">
-    <div class="s-head"><div class="s-logo" style="background:${s.color}">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
+    <div class="s-head"><div class="s-logo" style="background:${sellerLogoBg(s)}">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
       <div><div class="s-name">${esc(s.name)} ${s.verified ? `<span class="badge badge-verified">${icon('check')} Verified</span>` : ''}</div>
       <div class="rating-line">${stars(r.avg)} ${r.avg ? r.avg.toFixed(1) : '—'} · ${r.count} reviews</div></div></div>
     <div class="s-tag">${esc(s.tagline)}</div>
@@ -325,7 +336,7 @@ function viewProduct(seg) {
         <button class="btn btn-outline ${wished ? 'on' : ''}" onclick="toggleWish('${p.id}')" aria-label="Watchlist">${icon('heart')}</button>
       </div>`}
       <div class="seller-box" onclick="go('#/s/${s.slug}')">
-        <div class="s-logo" style="background:${s.color};width:44px;height:44px;font-size:.9rem">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
+        <div class="s-logo" style="background:${sellerLogoBg(s)};width:44px;height:44px;font-size:.9rem">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
         <div style="flex:1"><div class="s-name">${esc(s.name)} ${s.verified ? `<span class="badge badge-verified">${icon('check')} Verified</span>` : ''}</div>
           <div class="rating-line">${stars(r.avg)} ${r.count} reviews · ${timeAgo(s.joined).replace(' ago', '')} on VoltHub</div></div>
         <span class="see-all">Visit shop →</span></div>
@@ -354,11 +365,11 @@ function viewStore(seg, q) {
   const best = [...items].sort((a, b) => b.sold - a.sold).slice(0, 4);
   const codes = DB.codes.filter(c => c.sellerId === s.id && c.active && (!c.expires || c.expires > Date.now()) && (c.max == null || c.uses < c.max));
   const reviews = DB.reviews.filter(x => x.sellerId === s.id && !x.hidden).sort((a, b) => b.ts - a.ts);
-  return `<div class="wrap">
-    <div style="padding-top:1.3rem"><div class="store-banner" style="background:${s.color}">
+  return `<div class="wrap store-scope"${s.accent ? ` style="--shop-accent:${s.accent}"` : ''}>
+    <div style="padding-top:1.3rem"><div class="store-banner" style="background:${sellerBannerBg(s)}">
       <div class="store-banner-glow"></div></div></div>
     <div class="store-head">
-      <div class="store-logo" style="background:${s.color}">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
+      <div class="store-logo" style="background:${sellerLogoBg(s)}">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
       <div class="store-id">
         <h1 class="store-name">${esc(s.name)} ${s.verified ? `<span class="badge badge-verified">${icon('check')} Verified seller</span>` : ''}</h1>
         <div class="rating-line">${stars(r.avg)} <b>${r.avg ? r.avg.toFixed(1) : 'New'}</b> (${r.count} reviews) · ${items.length} items · joined ${timeAgo(s.joined)}</div>
@@ -523,7 +534,7 @@ function viewCart() {
     const pr = priceGroup(items, applied.ok ? applied.code : null);
     grand += pr.total; discTotal += pr.discount;
     return `<div class="cart-group reveal in">
-      <div class="cart-group-head"><div class="s-logo" style="background:${s.color};width:34px;height:34px;font-size:.75rem;border-radius:9px">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
+      <div class="cart-group-head"><div class="s-logo" style="background:${sellerLogoBg(s)};width:34px;height:34px;font-size:.75rem;border-radius:9px">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
         <b>${esc(s.name)}</b><a class="see-all" style="margin-left:auto" href="#/s/${s.slug}">shop →</a></div>
       ${items.map(i => `<div class="cart-line"><div class="thumb">${productArt(i.p)}</div>
         <div style="flex:1"><b>${esc(i.title)}</b><small>${money(i.price)} each · ${i.ship ? money(i.ship) + ' ship' : 'free ship'}</small>
@@ -724,7 +735,7 @@ function viewDashboard(seg, q) {
   const r = ratingOf(s.id);
   const tabs = [['overview', 'Overview'], ['products', `Products (${myP.length})`], ['codes', `Codes (${myC.length})`], ['orders', `Orders (${myO.length})`], ['settings', 'Settings']];
   return `<div class="wrap"><div class="page-head" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
-    <div class="s-logo" style="background:${s.color};width:54px;height:54px">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
+    <div class="s-logo" style="background:${sellerLogoBg(s)};width:54px;height:54px">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
     <div style="flex:1"><h1 style="font-size:1.4rem">${esc(s.name)}</h1><p>${s.slug}.volthub.example · <a href="#/s/${s.slug}">view public storefront →</a></p></div>
     ${s.status === 'suspended' ? '<span class="badge badge-danger">SUSPENDED</span>' : '<span class="badge badge-verified">Active · payouts on</span>'}</div>
   <div class="side-tabs">${tabs.map(([v, n]) => `<button class="${tab === v ? 'active' : ''}" onclick="go('#/dashboard?tab=${v}')">${n}</button>`).join('')}</div>
@@ -750,7 +761,7 @@ function viewDashboard(seg, q) {
         <td>${c.uses}${c.max != null ? '/' + c.max : ''}</td><td>${dead ? '<span class="badge badge-gray">inactive</span>' : '<span class="badge badge-verified">live</span>'}</td>
         <td><button class="btn btn-ghost btn-sm" onclick="toggleCode('${c.id}')">${c.active ? 'Disable' : 'Enable'}</button></td></tr>`; }).join('') || '<tr><td colspan="6" style="color:var(--ink3)">No codes yet — codes show on your storefront banner.</td></tr>'}</table></div>` : ''}
   ${tab === 'orders' ? `<div class="panel tbl-wrap">${myO.length ? sellerOrderRows(myO) : '<p style="color:var(--ink3)">No orders yet.</p>'}</div>` : ''}
-  ${tab === 'settings' ? `<div class="panel" style="max-width:560px"><form class="form" onsubmit="event.preventDefault();saveShop(this)">
+  ${tab === 'settings' ? brandEditorHTML(s) + `<div class="panel" style="max-width:560px"><form class="form" onsubmit="event.preventDefault();saveShop(this)">
     <div class="field"><label>Shop name</label><input name="name" value="${esc(s.name)}" required></div>
     <div class="field"><label>Tagline</label><input name="tagline" value="${esc(s.tagline)}" maxlength="80"></div>
     <div class="field"><label>About</label><textarea name="bio">${esc(s.bio)}</textarea></div>
@@ -778,6 +789,116 @@ function doShip(f, oid) {
   save(); closeModal(); render(); toast('<b>Shipped ✓</b> Buyer notified (demo).');
 }
 function saveShop(f) { const s = mySeller(); s.name = f.name.value; s.tagline = f.tagline.value; s.bio = f.bio.value; save(); render(); toast('Shop settings saved.'); }
+
+/* ---------- storefront branding editor ---------- */
+function brandEditorHTML(s) {
+  const initials = esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2));
+  const [c1, c2] = gradColors(s.color);
+  const banner = s.banner || '', accent = s.accent || '';
+  const isImg = !!banner, isUrlImg = isImg && !banner.startsWith('data:');
+  return `<div class="panel brand-editor" style="max-width:680px;margin-bottom:1.2rem">
+    <h3 style="margin-bottom:.15rem">🎨 Storefront branding</h3>
+    <p class="hint" style="margin-bottom:1rem">Design your banner, logo and shop accent — the preview updates live. This is exactly what buyers see on your public storefront.</p>
+    <div class="brand-preview store-scope"${accent ? ` style="--shop-accent:${accent}"` : ''}>
+      <div id="bp-banner" class="bp-banner" style="background:${sellerBannerBg(s)}"><div class="store-banner-glow"></div></div>
+      <div class="bp-head">
+        <div id="bp-logo" class="bp-logo" style="background:${sellerLogoBg(s)}">${initials}</div>
+        <div class="bp-id"><div class="bp-name">${esc(s.name)} <span class="badge badge-verified">${icon('check')} Verified seller</span></div>
+          <div class="bp-sub">${stars(ratingOf(s.id).avg || 5)} <span class="bp-accent-chip">${esc(s.slug)}.volthub.example</span></div></div>
+      </div>
+    </div>
+    <input type="hidden" id="bp-color" value="${esc(s.color)}">
+    <input type="hidden" id="bp-banner-val" value="${esc(banner)}">
+    <input type="hidden" id="bp-accent-val" value="${esc(accent)}">
+    <div class="brand-controls">
+      <div class="brand-block">
+        <label class="brand-lbl">Banner</label>
+        <div class="seg" id="bp-typeseg">
+          <button type="button" class="${isImg ? '' : 'on'}" onclick="brandType('gradient')">Gradient</button>
+          <button type="button" class="${isImg ? 'on' : ''}" onclick="brandType('image')">Image</button>
+        </div>
+        <div id="bp-grad-panel"${isImg ? ' style="display:none"' : ''}>
+          <div class="swatch-row">${PRESET_GRADIENTS.map(g => `<button type="button" class="swatch" style="background:${g}" title="Use this preset" onclick="brandPreset(\`${g}\`)"></button>`).join('')}</div>
+          <div class="brand-row">
+            <label class="color-lbl">Start <input type="color" id="bp-c1" value="${c1}" oninput="brandGradient()"></label>
+            <label class="color-lbl">End <input type="color" id="bp-c2" value="${c2}" oninput="brandGradient()"></label>
+          </div>
+        </div>
+        <div id="bp-img-panel"${isImg ? '' : ' style="display:none"'}>
+          <input type="file" accept="image/*" id="bp-file" onchange="brandUpload(this)" hidden>
+          <div class="brand-row">
+            <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('bp-file').click()">⬆ Upload image</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="brandRemoveImg()">Remove image</button>
+          </div>
+          <input class="brand-url" id="bp-url" placeholder="…or paste an image URL" value="${isUrlImg ? esc(banner) : ''}" oninput="brandImageUrl(this.value)">
+          <div class="hint">Uploads are auto-resized (~1200px, JPEG) so your storefront stays fast.</div>
+        </div>
+      </div>
+      <div class="brand-block">
+        <label class="brand-lbl">Accent color <span class="hint">— your logo + storefront highlights</span></label>
+        <div class="brand-row">
+          <input type="color" id="bp-accent" value="${accent || '#0ea48a'}" oninput="brandAccent()">
+          <span class="hint" id="bp-accent-hex">${accent || 'default (VoltHub aqua)'}</span>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="brandAccentReset()">Reset</button>
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary" onclick="saveBranding()">Save branding</button>
+    </div>
+  </div>`;
+}
+function brandPreview() {
+  const color = $('#bp-color').value, banner = $('#bp-banner-val').value, accent = $('#bp-accent-val').value;
+  $('#bp-banner').style.background = banner ? `url('${banner}') center/cover no-repeat` : color;
+  $('#bp-logo').style.background = accent || color;
+  const scope = document.querySelector('.brand-preview');
+  if (accent) scope.style.setProperty('--shop-accent', accent); else scope.style.removeProperty('--shop-accent');
+  const hex = $('#bp-accent-hex'); if (hex) hex.textContent = accent || 'default (VoltHub aqua)';
+}
+function brandType(t) {
+  const img = t === 'image';
+  $('#bp-grad-panel').style.display = img ? 'none' : '';
+  $('#bp-img-panel').style.display = img ? '' : 'none';
+  const seg = $('#bp-typeseg').children;
+  seg[0].classList.toggle('on', !img); seg[1].classList.toggle('on', img);
+  if (!img) brandGradient(); else brandPreview();
+}
+function brandGradient() {
+  $('#bp-color').value = `linear-gradient(135deg,${$('#bp-c1').value},${$('#bp-c2').value})`;
+  $('#bp-banner-val').value = '';
+  brandPreview();
+}
+function brandPreset(g) { const [c1, c2] = gradColors(g); $('#bp-c1').value = c1; $('#bp-c2').value = c2; brandGradient(); }
+function brandUpload(input) {
+  const file = input.files && input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, 1200 / img.width);
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * scale); cv.height = Math.round(img.height * scale);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      let data; try { data = cv.toDataURL('image/jpeg', 0.82); } catch (err) { data = e.target.result; }
+      $('#bp-banner-val').value = data; $('#bp-url').value = '';
+      brandType('image'); brandPreview();
+      toast('Banner image set — preview updated.');
+    };
+    img.onerror = () => toast('Could not read that image.', 'err');
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function brandImageUrl(v) { $('#bp-banner-val').value = v.trim(); brandPreview(); }
+function brandRemoveImg() { $('#bp-banner-val').value = ''; $('#bp-url').value = ''; $('#bp-file').value = ''; brandType('gradient'); }
+function brandAccent() { $('#bp-accent-val').value = $('#bp-accent').value; brandPreview(); }
+function brandAccentReset() { $('#bp-accent-val').value = ''; brandPreview(); }
+function saveBranding() {
+  const s = mySeller(); if (!s) return;
+  s.color = $('#bp-color').value;
+  s.banner = $('#bp-banner-val').value || null;
+  s.accent = $('#bp-accent-val').value || null;
+  save(); render(); toast('<b>Branding saved ✓</b> Your storefront is updated.');
+}
 
 /* product form */
 function openProductForm(pid) {
