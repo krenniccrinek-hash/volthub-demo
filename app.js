@@ -126,7 +126,7 @@ function heroFallTiles() {
   for (let i = 0; i < N; i++) {
     const p = picks[i % picks.length];
     const left = (i / N) * 92 + 2 + (Math.random() * 4 - 2);
-    const dur = 26 + Math.random() * 16;
+    const dur = 30 + Math.random() * 20;
     const delay = -Math.random() * dur;
     const r0 = Math.round(Math.random() * 20 - 10), r1 = r0 + Math.round(Math.random() * 24 - 12);
     const w = 98 + Math.round(Math.random() * 32);
