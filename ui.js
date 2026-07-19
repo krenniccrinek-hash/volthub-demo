@@ -68,7 +68,8 @@ function partArt(cat) {
   </svg>`;
 }
 function productArt(p) {
-  if (p.img) return `<img src="${esc(p.img)}" alt="${esc(p.title)}" loading="lazy" onerror="this.outerHTML=partArt('${p.cat}')">`;
+  const src = (p.imgs && p.imgs[0]) || p.img;
+  if (src) return `<img src="${esc(src)}" alt="${esc(p.title)}" loading="lazy" onerror="this.outerHTML=partArt('${p.cat}')">`;
   return partArt(p.cat);
 }
 

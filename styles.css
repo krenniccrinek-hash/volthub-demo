@@ -134,6 +134,8 @@ input,select,textarea{font:inherit;color:var(--ink)}
 .seller-web{display:inline-flex;align-items:center;color:var(--ink3);vertical-align:-2px;transition:color .15s}
 .seller-web svg{width:14px;height:14px}
 .seller-web:hover{color:var(--aqua-deep)}
+.store-web{color:var(--aqua-deep);font-weight:600;font-size:.85rem}
+.store-web:hover{text-decoration:underline}
 
 /* ---------- hero ---------- */
 .hero{position:relative;overflow:hidden;background:linear-gradient(180deg,#fdfeff 0%,var(--bg2) 100%);border-bottom:1px solid var(--line)}
@@ -313,7 +315,9 @@ input,select,textarea{font:inherit;color:var(--ink)}
 .brand-preview{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:1.3rem;background:#fff}
 .bp-banner{height:124px;position:relative;overflow:hidden}
 .brand-preview .bp-head{display:flex;align-items:flex-start;gap:.9rem;padding:.7rem 1rem 1rem}
-.bp-logo{width:64px;height:64px;border-radius:16px;display:grid;place-items:center;font-family:'Sora';font-weight:800;font-size:1.3rem;color:#fff;border:4px solid #fff;box-shadow:var(--shadow-sm);flex:none;margin-top:-38px}
+.bp-logo{width:64px;height:64px;border-radius:16px;display:grid;place-items:center;font-family:'Sora';font-weight:800;font-size:1.3rem;color:#fff;border:4px solid #fff;box-shadow:var(--shadow-sm);flex:none;margin-top:-38px;overflow:hidden}
+.s-logo,.store-logo,.bp-logo,.s-head .s-logo{overflow:hidden}
+.logo-fill{width:100%;height:100%;object-fit:cover;display:block}
 .bp-id{padding-top:.15rem;min-width:0}
 .bp-name{font-family:'Sora';font-weight:800;font-size:1.1rem;color:var(--navy);display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;line-height:1.15}
 .bp-sub{display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--ink3);margin-top:.3rem;flex-wrap:wrap}
@@ -335,9 +339,8 @@ input[type=color]{width:46px;height:34px;padding:2px;border:1.5px solid var(--li
 .brand-url:focus{border-color:var(--aqua)}
 
 /* ---------- falling listings layer ---------- */
-.demo-bar{position:relative;z-index:60}
-.fall-layer{position:fixed;inset:0;z-index:5;pointer-events:none;overflow:hidden}
-.ft{position:absolute;top:0;width:120px;pointer-events:auto;text-decoration:none;opacity:.5;animation-name:ftfall;animation-timing-function:linear;animation-iteration-count:infinite;will-change:transform}
+.hero-fall{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.ft{position:absolute;top:0;width:120px;pointer-events:auto;text-decoration:none;opacity:.82;animation-name:heroFall;animation-timing-function:linear;animation-iteration-count:infinite;will-change:top,transform}
 .ft-in{position:relative;display:block;background:#fff;border:1px solid var(--line);border-radius:13px;overflow:hidden;box-shadow:var(--shadow-md);transition:transform .3s var(--ease-lux),box-shadow .3s,border-color .2s}
 .ft-img{display:block;aspect-ratio:4/3;overflow:hidden;background:var(--bg2)}
 .ft-img img,.ft-img svg{width:100%;height:100%;object-fit:cover;display:block}
@@ -346,7 +349,7 @@ input[type=color]{width:46px;height:34px;padding:2px;border:1.5px solid var(--li
 .ft:hover{opacity:1;animation-play-state:paused;z-index:2}
 .ft:hover .ft-in{transform:scale(1.13);box-shadow:var(--shadow-lg);border-color:var(--aqua)}
 .ft:hover .ft-go{opacity:1}
-@keyframes ftfall{from{transform:translateY(-24vh) rotate(var(--r0,0deg))}to{transform:translateY(124vh) rotate(var(--r1,0deg))}}
+@keyframes heroFall{from{top:-16%;transform:rotate(var(--r0,0deg))}to{top:116%;transform:rotate(var(--r1,0deg))}}
 @media (prefers-reduced-motion:reduce){.ft{animation:none!important;display:none}}
 
 /* ---------- skeleton loading ---------- */
@@ -367,6 +370,34 @@ input[type=color]{width:46px;height:34px;padding:2px;border:1.5px solid var(--li
 .star-input button{color:var(--line2);transition:color .12s,transform .12s;padding:0 .04rem}
 .star-input button:hover{transform:scale(1.15)}
 .star-input button.on{color:#f5b431}
+.review{animation:fadeUp .4s var(--ease) both}
+.review-summary{display:flex;gap:1.6rem;align-items:center;flex-wrap:wrap;margin-bottom:1.3rem}
+.rs-score{display:flex;flex-direction:column;align-items:center;gap:.15rem;min-width:120px}
+.rs-score b{font-family:'Sora';font-size:2.7rem;font-weight:800;line-height:1;color:var(--navy)}
+.rs-score span{font-size:.8rem;color:var(--ink3)}
+.rs-bars{flex:1;min-width:220px;display:flex;flex-direction:column;gap:.32rem}
+.rs-bar{display:flex;align-items:center;gap:.6rem;font-size:.76rem;color:var(--ink3)}
+.rs-bar>span:first-child{width:22px}
+.rs-track{flex:1;height:8px;background:var(--ice);border-radius:99px;overflow:hidden}
+.rs-bar i{display:block;height:100%;background:#f5b431;border-radius:99px;transition:width .7s var(--ease-lux)}
+.rv-photos{display:flex;gap:.4rem;flex-wrap:wrap}
+.rv-thumb{position:relative;width:54px;height:54px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.rv-thumb img{width:100%;height:100%;object-fit:cover}
+.rv-thumb button{position:absolute;top:1px;right:1px;width:18px;height:18px;border-radius:50%;background:rgba(20,20,25,.72);color:#fff;font-size:.72rem;line-height:1;display:grid;place-items:center}
+.rv-photos-row{display:flex;gap:.5rem;flex-wrap:wrap;margin:.55rem 0 .1rem}
+.rv-photo{width:80px;height:80px;border-radius:10px;overflow:hidden;border:1px solid var(--line);display:block;transition:transform .2s var(--ease-lux),box-shadow .2s}
+.rv-photo:hover{transform:scale(1.06);box-shadow:var(--shadow-md)}
+.rv-photo img{width:100%;height:100%;object-fit:cover}
+.pf-thumbs{display:flex;gap:.5rem;flex-wrap:wrap}
+.pf-thumb{position:relative;width:64px;height:64px;border-radius:9px;overflow:hidden;border:1px solid var(--line)}
+.pf-thumb img{width:100%;height:100%;object-fit:cover}
+.pf-thumb button{position:absolute;top:1px;right:1px;width:18px;height:18px;border-radius:50%;background:rgba(20,20,25,.72);color:#fff;font-size:.72rem;line-height:1;display:grid;place-items:center}
+.pf-cover{position:absolute;bottom:0;left:0;right:0;background:rgba(20,20,25,.72);color:#fff;font-size:.56rem;text-align:center;padding:1px;z-index:1}
+.pd-thumbs{display:flex;gap:.5rem;margin-top:.7rem;flex-wrap:wrap}
+.pd-thumb{width:66px;height:66px;border-radius:10px;overflow:hidden;border:2px solid var(--line);cursor:pointer;padding:0;transition:border-color .2s,transform .2s}
+.pd-thumb.on{border-color:var(--navy)}
+.pd-thumb:hover{transform:translateY(-2px)}
+.pd-thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .review small{color:var(--ink3);font-size:.75rem}
 
 /* ---------- forms ---------- */

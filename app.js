@@ -4,10 +4,11 @@
 const DBKEY = 'ionxsupply_db_v1';
 let DB;
 try { DB = JSON.parse(localStorage.getItem(DBKEY)) || null; } catch (e) { DB = null; }
-if (!DB || DB.v !== 2) {
+if (!DB || DB.v !== 3) {
   DB = seedDB();
-  DB.v = 2;
+  DB.v = 3;
   DB.products.forEach(p => { p.img = 'img/' + p.id + '.jpg'; });  // real CC-licensed photos; partArt() SVG is the onerror fallback
+  const _sc = DB.products.find(p => p.id === 'p_bbshd'); if (_sc) _sc.imgs = ['img/p_bbshd.jpg', 'img/p_torque.jpg', 'img/p_kt35.jpg'];  // demo multi-photo gallery
   DB.guestCart = { items: [], codes: {} };
   save();
 }
@@ -36,6 +37,8 @@ const visibleProducts = () => DB.products.filter(p => p.qty > 0 && sellerActive(
 /* ---------- storefront branding ---------- */
 const sellerBannerBg = (s) => s.banner ? `url('${s.banner}') center/cover no-repeat` : s.color;
 const sellerLogoBg = (s) => s.accent || s.color;
+const sellerInitials = (s) => esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2));
+const logoContent = (s) => s.logo ? `<img class="logo-fill" src="${esc(s.logo)}" alt="">` : sellerInitials(s);
 const PRESET_GRADIENTS = [
   'linear-gradient(135deg,#2f3136,#6b6f76)', 'linear-gradient(135deg,#1c1d20,#4a4d52)',
   'linear-gradient(135deg,#17181a,#3a3c40)', 'linear-gradient(135deg,#5b5f66,#9ea2a9)',
@@ -111,21 +114,20 @@ function skeletonFor(key) {
   if (key === 'dashboard' || key === 'admin' || key === 'account') return `<div class="wrap"><div style="display:flex;gap:1rem;align-items:center;margin:1.1rem 0 1.2rem"><div class="sk" style="width:54px;height:54px;border-radius:14px;flex:none"></div><div style="flex:1"><div class="sk sk-line w40" style="height:20px;margin-bottom:.4rem"></div><div class="sk sk-line w50"></div></div></div><div class="stat-grid">${Array.from({ length: 5 }).map(() => `<div class="sk" style="height:88px;border-radius:var(--r)"></div>`).join('')}</div><div class="sk" style="height:210px;border-radius:var(--r);margin-top:1.2rem"></div></div>`;
   return `<div class="wrap" style="padding-top:1.4rem">${head}${cards(8)}</div>`;
 }
-function initFallingTiles() {
-  const root = document.getElementById('fall-layer'); if (!root) return;
+function heroFallTiles() {
   const picks = [...visibleProducts()].sort((a, b) => b.ts - a.ts);
-  if (!picks.length) { root.innerHTML = ''; return; }
-  const N = 16; let html = '';
+  if (!picks.length) return '';
+  const N = 9; let html = '';
   for (let i = 0; i < N; i++) {
     const p = picks[i % picks.length];
-    const left = (i / N) * 94 + 1 + (Math.random() * 3 - 1.5);
-    const dur = 30 + Math.random() * 20;
+    const left = (i / N) * 92 + 2 + (Math.random() * 4 - 2);
+    const dur = 40 + Math.random() * 24;
     const delay = -Math.random() * dur;
-    const r0 = Math.round(Math.random() * 24 - 12), r1 = r0 + Math.round(Math.random() * 30 - 15);
-    const w = 96 + Math.round(Math.random() * 44);
+    const r0 = Math.round(Math.random() * 20 - 10), r1 = r0 + Math.round(Math.random() * 24 - 12);
+    const w = 98 + Math.round(Math.random() * 32);
     html += `<a class="ft" href="#/p/${p.id}" tabindex="-1" title="${esc(p.title)} · ${money(p.price)}" style="left:${left.toFixed(1)}%;width:${w}px;--r0:${r0}deg;--r1:${r1}deg;animation-duration:${dur.toFixed(1)}s;animation-delay:${delay.toFixed(1)}s"><span class="ft-in"><span class="ft-img">${productArt(p)}</span><span class="ft-price">${money(p.price)}</span><span class="ft-go">View →</span></span></a>`;
   }
-  root.innerHTML = html;
+  return `<div class="hero-fall" aria-hidden="true">${html}</div>`;
 }
 window.addEventListener('hashchange', render);
 
@@ -235,7 +237,7 @@ function pCard(p) {
     <div class="p-art">${productArt(p)}<span class="sold-tag badge badge-${p.cond}">${condName(p.cond)}</span>
       <button class="wish ${wished ? 'on' : ''}" onclick="event.stopPropagation();toggleWish('${p.id}',this)" aria-label="Save">${icon('heart')}</button></div>
     <div class="p-body"><div class="p-title">${esc(p.title)}</div>
-      <div class="p-meta"><span class="p-seller" onclick="event.stopPropagation();go('#/s/${s.slug}')" title="Visit ${esc(s.name)}">${esc(s.name)}</span>${sellerWebLink(s)} · ${stars(r.avg)} <span>(${r.count})</span></div>
+      <div class="p-meta"><span class="p-seller" onclick="event.stopPropagation();go('#/s/${s.slug}')" title="Visit ${esc(s.name)}">${esc(s.name)}</span> · ${stars(r.avg)} <span>(${r.count})</span></div>
       <div class="p-price-row"><span class="p-price">${money(p.price)}</span><span class="p-ship">${p.ship ? '+' + money(p.ship) + ' ship' : 'Free ship'}</span></div>
     </div></div>`;
 }
@@ -267,7 +269,7 @@ function viewHome() {
   const tops = [...DB.sellers].filter(s => s.status === 'active').map(s => ({ s, r: ratingOf(s.id) })).sort((a, b) => b.r.avg - a.r.avg || b.r.count - a.r.count).slice(0, 4);
   const recent = DB.recent.map(productById).filter(p => p && p.qty > 0 && sellerActive(p.sellerId)).slice(0, 4);
   return `
-  <div class="hero"><div class="hero-blob b1"></div><div class="hero-blob b2"></div>
+  <div class="hero"><div class="hero-blob b1"></div><div class="hero-blob b2"></div>${heroFallTiles()}
     <div class="hero-inner">
       <span class="hero-eyebrow"><span class="dot"></span> ${visibleProducts().length} parts live from ${DB.sellers.filter(s => s.status === 'active').length} verified sellers</span>
       <h1>Every part. Every bike.<br><em>One garage.</em></h1>
@@ -301,7 +303,7 @@ function viewHome() {
 }
 function sCard(s, r) {
   return `<div class="card s-card reveal" onclick="go('#/s/${s.slug}')">
-    <div class="s-head"><div class="s-logo" style="background:${sellerLogoBg(s)}">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
+    <div class="s-head"><div class="s-logo" style="background:${sellerLogoBg(s)}">${logoContent(s)}</div>
       <div><div class="s-name">${esc(s.name)} ${s.verified ? `<span class="badge badge-verified">${icon('check')} Verified</span>` : ''}</div>
       <div class="rating-line">${stars(r.avg)} ${r.avg ? r.avg.toFixed(1) : '—'} · ${r.count} reviews</div></div></div>
     <div class="s-tag">${esc(s.tagline)}</div>
@@ -391,7 +393,10 @@ function viewProduct(seg) {
   return `<div class="wrap">
   <div class="crumb"><a href="#/">Home</a> / <a href="#/search?cat=${p.cat}">${catById(p.cat)?.name}</a> / ${esc(p.title.slice(0, 40))}…</div>
   <div class="pd">
-    <div class="pd-gallery reveal in">${productArt(p)}</div>
+    <div class="reveal in">
+      <div class="pd-gallery" id="pd-main">${productArt(p)}</div>
+      ${(p.imgs && p.imgs.length > 1) ? `<div class="pd-thumbs">${p.imgs.map((src, i) => `<button class="pd-thumb${i === 0 ? ' on' : ''}" data-src="${esc(src)}" onclick="pdSetImg(this)"><img src="${esc(src)}" alt="" loading="lazy"></button>`).join('')}</div>` : ''}
+    </div>
     <div class="pd-info">
       <div style="display:flex;gap:.5rem;align-items:center"><span class="badge badge-${p.cond}">${condName(p.cond)}</span>
         ${p.sold > 20 ? '<span class="badge badge-navy">🔥 Best seller</span>' : ''}${p.qty <= 2 ? `<span class="badge badge-warn">Only ${p.qty} left</span>` : ''}</div>
@@ -406,8 +411,8 @@ function viewProduct(seg) {
         <button class="btn btn-outline ${wished ? 'on' : ''}" onclick="toggleWish('${p.id}')" aria-label="Watchlist">${icon('heart')}</button>
       </div>`}
       <div class="seller-box" onclick="go('#/s/${s.slug}')">
-        <div class="s-logo" style="background:${sellerLogoBg(s)};width:44px;height:44px;font-size:.9rem">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
-        <div style="flex:1"><div class="s-name">${esc(s.name)} ${s.verified ? `<span class="badge badge-verified">${icon('check')} Verified</span>` : ''}${sellerWebLink(s)}</div>
+        <div class="s-logo" style="background:${sellerLogoBg(s)};width:44px;height:44px;font-size:.9rem">${logoContent(s)}</div>
+        <div style="flex:1"><div class="s-name">${esc(s.name)} ${s.verified ? `<span class="badge badge-verified">${icon('check')} Verified</span>` : ''}</div>
           <div class="rating-line">${stars(r.avg)} ${r.count} reviews · ${timeAgo(s.joined).replace(' ago', '')} on IonxSupply</div></div>
         <span class="see-all">Visit shop →</span></div>
       <h3 style="margin:1.1rem 0 .2rem;font-size:1rem">Specs</h3>
@@ -421,7 +426,8 @@ function viewProduct(seg) {
       <div class="protect">${icon('shield')}<div><b>IonxSupply Buyer Protection.</b> Payment held by the platform, released to the seller on fulfillment. Not as described? <a href="#/legal/refunds">Open a dispute</a> within 48h of delivery.</div></div>
     </div></div>
   <section class="section" id="reviews">
-    <div class="section-head"><div><h2>Reviews (${pReviews.length})</h2>${pReviews.length ? `<p>${stars(pAvg)} ${pAvg.toFixed(1)} average for this part</p>` : ''}</div></div>
+    <div class="section-head"><div><h2>Reviews (${pReviews.length})</h2></div></div>
+    ${pReviews.length ? reviewSummary(pReviews) : ''}
     ${reviewFormHTML(p)}
     <div class="reviews-list">${pReviews.length ? pReviews.map(reviewRow).join('') : '<div class="empty" style="padding:1.4rem 0"><p>No reviews yet — be the first to review this part.</p></div>'}</div>
   </section>
@@ -436,21 +442,70 @@ function reviewFormHTML(p) {
     <div class="star-input" id="rv-stars">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-v="${n}" class="on" onclick="setReviewStars(${n})" aria-label="${n} stars">★</button>`).join('')}</div>
     <input type="hidden" name="rating" id="rv-rating" value="5">
     <textarea name="body" required placeholder="How was the part? Fit, quality, shipping…" style="width:100%;margin-top:.6rem"></textarea>
+    <input type="file" accept="image/*" multiple id="rv-photofile" onchange="reviewPhotoUpload(this)" hidden>
+    <input type="hidden" name="photos" id="rv-photos-val" value="">
+    <div class="brand-row" style="margin-top:.6rem"><button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('rv-photofile').click()">📷 Add photos</button><span class="hint">up to 4</span></div>
+    <div id="rv-photos" class="rv-photos" style="margin-top:.5rem"></div>
     <button class="btn btn-primary" style="margin-top:.7rem">Post review</button></form>`;
+}
+function reviewPhotoUpload(input) {
+  const files = [...(input.files || [])];
+  const hidden = document.getElementById('rv-photos-val');
+  let arr = []; try { arr = JSON.parse(hidden.value || '[]'); } catch (e) {}
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, 900 / img.width);
+        const cv = document.createElement('canvas');
+        cv.width = Math.round(img.width * scale); cv.height = Math.round(img.height * scale);
+        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+        let data; try { data = cv.toDataURL('image/jpeg', 0.8); } catch (err) { data = e.target.result; }
+        arr.push(data); arr = arr.slice(0, 4);
+        hidden.value = JSON.stringify(arr); renderReviewThumbs();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+function renderReviewThumbs() {
+  const hidden = document.getElementById('rv-photos-val'), box = document.getElementById('rv-photos'); if (!hidden || !box) return;
+  let arr = []; try { arr = JSON.parse(hidden.value || '[]'); } catch (e) {}
+  box.innerHTML = arr.map((src, i) => `<span class="rv-thumb"><img src="${src}" alt=""><button type="button" onclick="removeReviewPhoto(${i})" aria-label="Remove">×</button></span>`).join('');
+}
+function removeReviewPhoto(i) {
+  const hidden = document.getElementById('rv-photos-val'); let arr = []; try { arr = JSON.parse(hidden.value || '[]'); } catch (e) {}
+  arr.splice(i, 1); hidden.value = JSON.stringify(arr); renderReviewThumbs();
+}
+function reviewSummary(list) {
+  const avg = list.reduce((t, r) => t + r.rating, 0) / list.length;
+  const dist = [5, 4, 3, 2, 1].map(n => ({ n, c: list.filter(r => r.rating === n).length }));
+  return `<div class="review-summary panel"><div class="rs-score"><b>${avg.toFixed(1)}</b>${stars(avg)}<span>${list.length} review${list.length !== 1 ? 's' : ''}</span></div>
+    <div class="rs-bars">${dist.map(d => `<div class="rs-bar"><span>${d.n}★</span><div class="rs-track"><i style="width:${list.length ? Math.round(d.c / list.length * 100) : 0}%"></i></div><span>${d.c}</span></div>`).join('')}</div></div>`;
 }
 function submitProductReview(f, pid, sellerId) {
   if (!requireAuth()) return;
   const rating = Math.max(1, Math.min(5, parseInt(f.rating.value) || 5));
   const body = f.body.value.trim(); if (!body) return;
-  DB.reviews.push({ id: uid('rv'), sellerId, productId: pid, buyerId: me().id, rating, body, verified: false, hidden: false, ts: Date.now() });
+  let photos = []; try { photos = JSON.parse(f.photos.value || '[]'); } catch (e) {}
+  DB.reviews.push({ id: uid('rv'), sellerId, productId: pid, buyerId: me().id, rating, body, photos: photos.slice(0, 4), verified: false, hidden: false, ts: Date.now() });
   save(); render(); toast('<b>Review posted.</b> Thanks for the feedback!');
 }
 function setReviewStars(n) { $('#rv-rating').value = n; $$('#rv-stars button').forEach(b => b.classList.toggle('on', +b.dataset.v <= n)); }
 function reviewRow(rv) {
   const u = userById(rv.buyerId);
-  return `<div class="review"><div class="review-head"><span class="avatar">${esc((u?.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2))}</span><b style="font-size:.9rem">${esc(u?.name || 'Buyer')}</b> ${stars(rv.rating)} <small>· ${rv.verified === false ? '' : 'verified purchase · '}${timeAgo(rv.ts)}</small></div><p>${esc(rv.body)}</p></div>`;
+  return `<div class="review"><div class="review-head"><span class="avatar">${esc((u?.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2))}</span><b style="font-size:.9rem">${esc(u?.name || 'Buyer')}</b> ${stars(rv.rating)} <small>· ${rv.verified === false ? '' : 'verified purchase · '}${timeAgo(rv.ts)}</small></div><p>${esc(rv.body)}</p>${rv.photos && rv.photos.length ? `<div class="rv-photos-row">${rv.photos.map(src => `<a class="rv-photo" href="${src}" target="_blank" rel="noopener"><img src="${src}" alt="review photo" loading="lazy"></a>`).join('')}</div>` : ''}</div>`;
 }
 function pdQty(d, max) { const el = $('#pdq'); el.textContent = Math.max(1, Math.min(max, +el.textContent + d)); }
+function pdSetImg(btn) {
+  const g = document.getElementById('pd-main'); if (!g) return;
+  const img = g.querySelector('img');
+  if (img) img.src = btn.dataset.src; else g.innerHTML = `<img src="${btn.dataset.src}" alt="">`;
+  document.querySelectorAll('.pd-thumb').forEach(b => b.classList.remove('on')); btn.classList.add('on');
+}
 
 /* ---------- storefront ---------- */
 function viewStore(seg, q) {
@@ -466,11 +521,12 @@ function viewStore(seg, q) {
     <div style="padding-top:1.3rem"><div class="store-banner" style="background:${sellerBannerBg(s)}">
       <div class="store-banner-glow"></div></div></div>
     <div class="store-head">
-      <div class="store-logo" style="background:${sellerLogoBg(s)}">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
+      <div class="store-logo" style="background:${sellerLogoBg(s)}">${logoContent(s)}</div>
       <div class="store-id">
-        <h1 class="store-name">${esc(s.name)} ${s.verified ? `<span class="badge badge-verified">${icon('check')} Verified seller</span>` : ''}${sellerWebLink(s)}</h1>
+        <h1 class="store-name">${esc(s.name)} ${s.verified ? `<span class="badge badge-verified">${icon('check')} Verified seller</span>` : ''}</h1>
         <div class="rating-line">${stars(r.avg)} <b>${r.avg ? r.avg.toFixed(1) : 'New'}</b> (${r.count} reviews) · ${items.length} items · joined ${timeAgo(s.joined)}</div>
         <div class="store-domain">🌐 ${s.slug}.ionxsupply.example <span style="opacity:.6">(seller subdomains — live in the real build)</span></div>
+        ${s.website ? `<div class="store-domain" style="margin-top:.2rem"><a class="store-web" href="${esc(s.website)}" target="_blank" rel="noopener nofollow">🔗 ${esc(s.website.replace(/^https?:\/\//, ''))} <span style="font-size:.85em">↗</span></a></div>` : ''}
       </div>
       <div class="store-actions"><button class="btn btn-danger btn-sm" onclick="openReport('${s.id}')">${icon('flag')} Report seller</button></div></div>
     <div class="tabs">
@@ -481,7 +537,7 @@ function viewStore(seg, q) {
       ${best.length > 1 ? `<div class="section-head"><h2 style="font-size:1.1rem">⭐ Shop best sellers</h2></div><div class="grid grid-products" style="margin-bottom:1.6rem">${best.map(pCard).join('')}</div>` : ''}
       <div class="section-head"><h2 style="font-size:1.1rem">All items</h2></div>
       ${items.length ? `<div class="grid grid-products">${items.map(pCard).join('')}</div>` : '<div class="empty">No items listed right now.</div>'}` : ''}
-    ${tab === 'reviews' ? (reviews.length ? reviews.map(rv => { const u = userById(rv.buyerId); return `<div class="review"><div class="review-head"><span class="avatar">${esc((u?.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2))}</span><b style="font-size:.9rem">${esc(u?.name || 'Buyer')}</b> ${stars(rv.rating)} <small>· verified purchase · ${timeAgo(rv.ts)}</small></div><p>${esc(rv.body)}</p></div>`; }).join('') : '<div class="empty">No reviews yet.</div>') : ''}
+    ${tab === 'reviews' ? (reviews.length ? reviewSummary(reviews) + reviews.map(reviewRow).join('') : '<div class="empty">No reviews yet.</div>') : ''}
     ${tab === 'about' ? `<div class="panel" style="max-width:640px"><p style="color:var(--ink2)">${esc(s.bio)}</p><p style="margin-top:.8rem;font-size:.83rem;color:var(--ink3)">All sales run through IonxSupply checkout with buyer protection. Payouts to sellers via Stripe. <a href="#/legal/refunds">How protection works</a></p></div>` : ''}
   </div>`;
 }
@@ -637,7 +693,7 @@ function viewCart() {
     const pr = priceGroup(items, applied.ok ? applied.code : null);
     grand += pr.total; discTotal += pr.discount;
     return `<div class="cart-group reveal in">
-      <div class="cart-group-head"><div class="s-logo" style="background:${sellerLogoBg(s)};width:34px;height:34px;font-size:.75rem;border-radius:9px">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
+      <div class="cart-group-head"><div class="s-logo" style="background:${sellerLogoBg(s)};width:34px;height:34px;font-size:.75rem;border-radius:9px">${logoContent(s)}</div>
         <b>${esc(s.name)}</b><a class="see-all" style="margin-left:auto" href="#/s/${s.slug}">shop →</a></div>
       ${items.map(i => `<div class="cart-line"><div class="thumb">${productArt(i.p)}</div>
         <div style="flex:1"><b>${esc(i.title)}</b><small>${money(i.price)} each · ${i.ship ? money(i.ship) + ' ship' : 'free ship'}</small>
@@ -839,7 +895,7 @@ function viewDashboard(seg, q) {
   const r = ratingOf(s.id);
   const tabs = [['overview', 'Overview'], ['products', `Products (${myP.length})`], ['codes', `Codes (${myC.length})`], ['orders', `Orders (${myO.length})`], ['reviews', `Reviews (${myR.length})`], ['settings', 'Settings']];
   return `<div class="wrap"><div class="page-head" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
-    <div class="s-logo" style="background:${sellerLogoBg(s)};width:54px;height:54px">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
+    <div class="s-logo" style="background:${sellerLogoBg(s)};width:54px;height:54px">${logoContent(s)}</div>
     <div style="flex:1"><h1 style="font-size:1.4rem">${esc(s.name)}</h1><p>${s.slug}.ionxsupply.example · <a href="#/s/${s.slug}">view public storefront →</a></p></div>
     ${s.status === 'suspended' ? '<span class="badge badge-danger">SUSPENDED</span>' : '<span class="badge badge-verified">Active · payouts on</span>'}</div>
   <div class="side-tabs">${tabs.map(([v, n]) => `<button class="${tab === v ? 'active' : ''}" onclick="go('#/dashboard?tab=${v}')">${n}</button>`).join('')}</div>
@@ -908,7 +964,7 @@ function brandEditorHTML(s) {
     <div class="brand-preview store-scope"${accent ? ` style="--shop-accent:${accent}"` : ''}>
       <div id="bp-banner" class="bp-banner" style="background:${sellerBannerBg(s)}"><div class="store-banner-glow"></div></div>
       <div class="bp-head">
-        <div id="bp-logo" class="bp-logo" style="background:${sellerLogoBg(s)}">${initials}</div>
+        <div id="bp-logo" class="bp-logo" style="background:${sellerLogoBg(s)}">${s.logo ? `<img class="logo-fill" src="${esc(s.logo)}" alt="">` : initials}</div>
         <div class="bp-id"><div class="bp-name">${esc(s.name)} <span class="badge badge-verified">${icon('check')} Verified seller</span></div>
           <div class="bp-sub">${stars(ratingOf(s.id).avg || 5)} <span class="bp-accent-chip">${esc(s.slug)}.ionxsupply.example</span></div></div>
       </div>
@@ -916,6 +972,7 @@ function brandEditorHTML(s) {
     <input type="hidden" id="bp-color" value="${esc(s.color)}">
     <input type="hidden" id="bp-banner-val" value="${esc(banner)}">
     <input type="hidden" id="bp-accent-val" value="${esc(accent)}">
+    <input type="hidden" id="bp-logo-val" value="${esc(s.logo || '')}">
     <div class="brand-controls">
       <div class="brand-block">
         <label class="brand-lbl">Banner</label>
@@ -941,6 +998,14 @@ function brandEditorHTML(s) {
         </div>
       </div>
       <div class="brand-block">
+        <label class="brand-lbl">Logo <span class="hint">— replaces the initials on your shop (PNG with transparency looks best)</span></label>
+        <input type="file" accept="image/*" id="bp-logofile" onchange="brandLogoUpload(this)" hidden>
+        <div class="brand-row">
+          <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('bp-logofile').click()">⬆ Upload logo</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="brandLogoRemove()">Use initials</button>
+        </div>
+      </div>
+      <div class="brand-block">
         <label class="brand-lbl">Accent color <span class="hint">— your logo + storefront highlights</span></label>
         <div class="brand-row">
           <input type="color" id="bp-accent" value="${accent || '#5b5f66'}" oninput="brandAccent()">
@@ -955,7 +1020,9 @@ function brandEditorHTML(s) {
 function brandPreview() {
   const color = $('#bp-color').value, banner = $('#bp-banner-val').value, accent = $('#bp-accent-val').value;
   $('#bp-banner').style.background = banner ? `url('${banner}') center/cover no-repeat` : color;
-  $('#bp-logo').style.background = accent || color;
+  const bl = $('#bp-logo'), logo = $('#bp-logo-val').value;
+  bl.style.background = accent || color;
+  bl.innerHTML = logo ? `<img class="logo-fill" src="${logo}" alt="">` : (mySeller() ? sellerInitials(mySeller()) : '');
   const scope = document.querySelector('.brand-preview');
   if (accent) scope.style.setProperty('--shop-accent', accent); else scope.style.removeProperty('--shop-accent');
   const hex = $('#bp-accent-hex'); if (hex) hex.textContent = accent || 'default (IonxSupply grey)';
@@ -996,6 +1063,26 @@ function brandUpload(input) {
 }
 function brandImageUrl(v) { $('#bp-banner-val').value = v.trim(); brandPreview(); }
 function brandRemoveImg() { $('#bp-banner-val').value = ''; $('#bp-url').value = ''; $('#bp-file').value = ''; brandType('gradient'); }
+function brandLogoUpload(input) {
+  const file = input.files && input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, 400 / Math.max(img.width, img.height));
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * scale); cv.height = Math.round(img.height * scale);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      let data; try { data = cv.toDataURL('image/png'); } catch (err) { data = e.target.result; }
+      $('#bp-logo-val').value = data; brandPreview();
+      toast('Logo set — preview updated.');
+    };
+    img.onerror = () => toast('Could not read that image.', 'err');
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function brandLogoRemove() { $('#bp-logo-val').value = ''; $('#bp-logofile').value = ''; brandPreview(); }
 function brandAccent() { $('#bp-accent-val').value = $('#bp-accent').value; brandPreview(); }
 function brandAccentReset() { $('#bp-accent-val').value = ''; brandPreview(); }
 function saveBranding() {
@@ -1003,6 +1090,7 @@ function saveBranding() {
   s.color = $('#bp-color').value;
   s.banner = $('#bp-banner-val').value || null;
   s.accent = $('#bp-accent-val').value || null;
+  s.logo = $('#bp-logo-val').value || null;
   save(); render(); toast('<b>Branding saved ✓</b> Your storefront is updated.');
 }
 
@@ -1019,13 +1107,12 @@ function openProductForm(pid) {
     <div class="field"><label>Shipping ($, 0 = free)</label><input name="ship" type="number" step="0.01" min="0" required value="${p ? (p.ship / 100).toFixed(2) : '0'}"></div></div>
     <div class="form-row"><div class="field"><label>Quantity</label><input name="qty" type="number" min="0" required value="${p ? p.qty : 1}"></div>
     <div class="field"><label>Brand</label><input name="brand" value="${p ? esc(p.brand) : ''}"></div></div>
-    <div class="field"><label>Photo <span style="font-weight:400;color:var(--ink3)">(optional — we generate clean part art if empty)</span></label>
-      <div class="brand-row" style="margin-bottom:.45rem">
-        <input type="file" accept="image/*" id="pf-file" onchange="productPhotoUpload(this)" hidden>
-        <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('pf-file').click()">⬆ Upload from computer</button>
-        <img id="pf-prev" src="${p && p.img ? esc(p.img) : ''}" alt="" style="${p && p.img ? '' : 'display:none;'}height:42px;border-radius:8px;border:1px solid var(--line);object-fit:cover">
-      </div>
-      <input name="img" value="${p && p.img ? esc(p.img) : ''}" placeholder="…or paste an image URL" oninput="var pv=document.getElementById('pf-prev');pv.src=this.value;pv.style.display=this.value?'':'none'"></div>
+    <div class="field"><label>Photos <span style="font-weight:400;color:var(--ink3)">(optional — add several; the first is the cover, we generate clean art if empty)</span></label>
+      <input type="file" accept="image/*" multiple id="pf-file" onchange="productPhotoUpload(this)" hidden>
+      <input type="hidden" name="imgs" id="pf-imgs" value="${p ? esc(JSON.stringify(p.imgs && p.imgs.length ? p.imgs : (p.img ? [p.img] : []))) : '[]'}">
+      <div class="brand-row" style="margin-bottom:.5rem"><button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('pf-file').click()">⬆ Upload from computer</button><span class="hint">up to 6 · first = cover</span></div>
+      <div id="pf-thumbs" class="pf-thumbs"></div>
+      <div class="brand-row" style="margin-top:.5rem"><input class="brand-url" id="pf-url" placeholder="…or paste an image URL" style="flex:1"><button type="button" class="btn btn-ghost btn-sm" onclick="pfAddUrl()">Add</button></div></div>
     <div class="field"><label>Specs (electrical compatibility sells parts)</label>
       ${specs.slice(0, 4).map(([k, v], i) => `<div class="form-row" style="margin-bottom:.4rem"><input name="sk${i}" placeholder="Voltage" value="${esc(k)}"><input name="sv${i}" placeholder="52V" value="${esc(v)}"></div>`).join('')}</div>
     <div class="field"><label>Fits which bikes?</label>
@@ -1038,42 +1125,54 @@ function openProductForm(pid) {
   const sel = $('#modal-root select[name=cat]');
   const note = () => { $('#bat-note').style.display = sel.value === 'batteries' ? 'block' : 'none'; };
   sel.addEventListener('change', note); note();
+  renderProductThumbs();
 }
+function pfImgs() { try { return JSON.parse(document.getElementById('pf-imgs').value || '[]'); } catch (e) { return []; } }
+function pfSetImgs(arr) { document.getElementById('pf-imgs').value = JSON.stringify(arr.slice(0, 6)); renderProductThumbs(); }
+function renderProductThumbs() {
+  const box = document.getElementById('pf-thumbs'); if (!box) return;
+  box.innerHTML = pfImgs().map((src, i) => `<span class="pf-thumb">${i === 0 ? '<span class="pf-cover">Cover</span>' : ''}<img src="${esc(src)}" alt=""><button type="button" onclick="pfRemoveImg(${i})" aria-label="Remove">×</button></span>`).join('');
+}
+function pfRemoveImg(i) { const a = pfImgs(); a.splice(i, 1); pfSetImgs(a); }
+function pfAddUrl() { const el = document.getElementById('pf-url'); const v = (el.value || '').trim(); if (!v) return; pfSetImgs([...pfImgs(), v]); el.value = ''; }
 function saveProduct(f, pid) {
   const s = mySeller();
   const specs = {};
   for (let i = 0; i < 4; i++) { const k = f['sk' + i]?.value.trim(), v = f['sv' + i]?.value.trim(); if (k && v) specs[k] = v; }
   const fits = BIKES.filter(b => f['fit_' + b.id]?.checked).map(b => b.id);
+  let imgs = []; try { imgs = JSON.parse(f.imgs.value || '[]'); } catch (e) {}
+  imgs = imgs.filter(Boolean).slice(0, 6);
   const base = {
     title: f.title.value, cat: f.cat.value, cond: f.cond.value, brand: f.brand.value || '—',
     price: Math.round(parseFloat(f.price.value) * 100), ship: Math.round(parseFloat(f.ship.value) * 100),
-    qty: parseInt(f.qty.value), universal: f.universal.checked, fits, specs, desc: f.desc.value, img: f.img.value.trim() || null,
+    qty: parseInt(f.qty.value), universal: f.universal.checked, fits, specs, desc: f.desc.value,
+    img: imgs[0] || null, imgs: imgs.length ? imgs : null,
   };
   if (pid) Object.assign(productById(pid), base);
   else DB.products.push({ id: uid('p'), sellerId: s.id, sold: 0, views: 0, ts: Date.now(), ...base });
-  save(); closeModal(); render(); initFallingTiles(); toast(pid ? 'Listing updated.' : '<b>Listing live!</b> It\'s now searchable market-wide.');
+  save(); closeModal(); render(); toast(pid ? 'Listing updated.' : '<b>Listing live!</b> It\'s now searchable market-wide.');
 }
 function delProduct(pid) { if (!confirm('Remove this listing?')) return; DB.products = DB.products.filter(p => p.id !== pid); save(); render(); toast('Listing removed.'); }
 function productPhotoUpload(input) {
-  const file = input.files && input.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const img = new Image();
-    img.onload = () => {
-      const scale = Math.min(1, 1000 / img.width);
-      const cv = document.createElement('canvas');
-      cv.width = Math.round(img.width * scale); cv.height = Math.round(img.height * scale);
-      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
-      let data; try { data = cv.toDataURL('image/jpeg', 0.82); } catch (err) { data = e.target.result; }
-      const form = input.closest('form');
-      if (form && form.img) form.img.value = data;
-      const pv = document.getElementById('pf-prev'); if (pv) { pv.src = data; pv.style.display = ''; }
-      toast('Photo added — publish to save it.');
+  const files = [...(input.files || [])];
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, 1000 / img.width);
+        const cv = document.createElement('canvas');
+        cv.width = Math.round(img.width * scale); cv.height = Math.round(img.height * scale);
+        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+        let data; try { data = cv.toDataURL('image/jpeg', 0.82); } catch (err) { data = e.target.result; }
+        pfSetImgs([...pfImgs(), data]);
+      };
+      img.onerror = () => toast('Could not read that image.', 'err');
+      img.src = e.target.result;
     };
-    img.onerror = () => toast('Could not read that image.', 'err');
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
 }
 function openCodeForm() {
   modal(`${modalHead('New discount code')}<div class="modal-body"><form class="form" onsubmit="event.preventDefault();saveCode(this)">
@@ -1162,4 +1261,3 @@ function notFound() {
 
 /* ================= boot ================= */
 render();
-initFallingTiles();
