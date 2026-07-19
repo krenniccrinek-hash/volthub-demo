@@ -25,6 +25,7 @@ const sellerById = (id) => DB.sellers.find(s => s.id === id);
 const productById = (id) => DB.products.find(p => p.id === id);
 const userById = (id) => DB.users.find(u => u.id === id);
 const allBikes = () => [...BIKES, ...(DB.customBikes || [])];
+const allBikesSorted = () => [...allBikes()].sort((a, b) => (a.brand + ' ' + a.model).localeCompare(b.brand + ' ' + b.model));
 const bikeById = (id) => allBikes().find(b => b.id === id);
 const catById = (id) => CATS.find(c => c.id === id);
 const mySeller = () => { const u = me(); return u && u.sellerId ? sellerById(u.sellerId) : null; };
@@ -301,7 +302,7 @@ function viewHome() {
     <section class="section"><div class="section-head reveal"><div><h2>Shop by category</h2></div></div>
       <div class="grid grid-cats">${CATS.map(c => `<div class="cat-tile reveal" data-cat="${c.id}" onclick="go('#/search?cat=${c.id}')"><div class="ic">${icon(c.icon)}</div><b>${c.name}</b><small>${c.blurb}</small></div>`).join('')}</div></section>
     <section class="section"><div class="section-head reveal"><div><h2>Shop by bike</h2><p>Parts filtered to what actually fits</p></div></div>
-      <div class="hero-chips" style="justify-content:flex-start">${allBikes().map(b => `<button class="chip reveal" onclick="go('#/bike/${b.id}')">${b.brand} ${b.model}</button>`).join('')}</div></section>
+      <div class="hero-chips" style="justify-content:flex-start">${allBikesSorted().map(b => `<button class="chip reveal" onclick="go('#/bike/${b.id}')">${b.brand} ${b.model}</button>`).join('')}</div></section>
     <section class="section"><div class="band reveal"><h2>Turn your parts bin into a storefront.</h2>
       <p>Your own shop at <b>yourname.ionxsupply.example</b>, discount codes, dashboards and payouts — we take 6.7% only when you sell.</p>
       <div class="stats"><div><b data-count="${DB.products.reduce((s, p) => s + p.sold, 0)}"></b><span>parts sold</span></div><div><b data-count="${DB.reviews.length}"></b><span>verified reviews</span></div><div><b>6.7%</b><span>flat fee, listing is free</span></div></div>
@@ -365,7 +366,7 @@ function viewSearch(seg, q) {
     <aside class="filters">
       <h4>Fits my bike</h4>
       <select onchange="${setF('bike', '')}.replace('bike=','x=');(function(v){const p=new URLSearchParams(location.hash.split('?')[1]||'');v?p.set('bike',v):p.delete('bike');go('#/search?'+p)})(this.value)">
-        <option value="">Any bike</option>${allBikes().map(b => `<option value="${b.id}" ${f.bike === b.id ? 'selected' : ''}>${b.brand} ${b.model}</option>`).join('')}</select>
+        <option value="">Any bike</option>${allBikesSorted().map(b => `<option value="${b.id}" ${f.bike === b.id ? 'selected' : ''}>${b.brand} ${b.model}</option>`).join('')}</select>
       <h4>Category</h4>
       ${CATS.map(c => `<label><input type="radio" name="cat" ${f.cat === c.id ? 'checked' : ''} onchange="${setF('cat', c.id)}">${c.name}</label>`).join('')}
       <label><input type="radio" name="cat" ${!f.cat ? 'checked' : ''} onchange="${setF('cat', '')}">All categories</label>
@@ -1159,7 +1160,7 @@ function saveBranding() {
 
 /* product form */
 function bikeChecks(checkedIds) {
-  return allBikes().map(b => `<label class="check-line" style="padding:.12rem 0"><input type="checkbox" name="fit_${b.id}" ${checkedIds.includes(b.id) ? 'checked' : ''}> ${esc(b.brand)} ${esc(b.model)}</label>`).join('');
+  return allBikesSorted().map(b => `<label class="check-line" style="padding:.12rem 0"><input type="checkbox" name="fit_${b.id}" ${checkedIds.includes(b.id) ? 'checked' : ''}> ${esc(b.brand)} ${esc(b.model)}</label>`).join('');
 }
 function addCustomBike() {
   const brand = ($('#pf-bike-brand').value || '').trim(), model = ($('#pf-bike-model').value || '').trim();

@@ -65,6 +65,20 @@ const BIKES = [
   { id: 'wattwagons', brand: 'Watt Wagons', model: 'Hydra',             cls: 'Class 3' },
   { id: 'vintage',    brand: 'Vintage',     model: 'Roadster',          cls: 'Class 2' },
   { id: 'fluxprimo',  brand: 'Flux',        model: 'Primo',             cls: 'Class 2' },
+  { id: 'yozmain10',    brand: 'Yozma',          model: 'IN10',            cls: 'E-moto' },
+  { id: 'yozmain10pro', brand: 'Yozma',          model: 'IN10 Pro',        cls: 'E-moto' },
+  { id: 'heybikevill',  brand: 'Heybike',        model: 'Villain',         cls: 'E-moto' },
+  { id: 'tuttiosoliel', brand: 'Tuttio',         model: 'Soliel',          cls: 'E-moto' },
+  { id: 'talariasting', brand: 'Talaria',        model: 'Sting',           cls: 'E-moto' },
+  { id: 'talariaxxx',   brand: 'Talaria',        model: 'XXX',             cls: 'E-moto' },
+  { id: 'talariamx5',   brand: 'Talaria',        model: 'MX5 Pro',         cls: 'E-moto' },
+  { id: 'talariakomodo',brand: 'Talaria',        model: 'Komodo',          cls: 'E-moto' },
+  { id: 'segwayx260',   brand: 'Segway',         model: 'X260 Dirt eBike', cls: 'E-moto' },
+  { id: 'segwayx160',   brand: 'Segway',         model: 'X160 Dirt eBike', cls: 'E-moto' },
+  { id: 'bike79falcon', brand: '79Bike',         model: 'Falcon Pro',      cls: 'E-moto' },
+  { id: 'valtinsuem5',  brand: 'VALTINSU',       model: 'EM-5 Pro',        cls: 'E-moto' },
+  { id: 'altisdelta',   brand: 'Altis',          model: 'Delta',           cls: 'E-moto' },
+  { id: 'arcticleo',    brand: 'Arctic Leopard', model: 'XE Pro S',        cls: 'E-moto' },
 ];
 
 const SELLER_COLORS = {
