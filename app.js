@@ -186,7 +186,7 @@ function pCard(p) {
     <div class="p-art">${productArt(p)}<span class="sold-tag badge badge-${p.cond}">${condName(p.cond)}</span>
       <button class="wish ${wished ? 'on' : ''}" onclick="event.stopPropagation();toggleWish('${p.id}',this)" aria-label="Save">${icon('heart')}</button></div>
     <div class="p-body"><div class="p-title">${esc(p.title)}</div>
-      <div class="p-meta">${esc(s.name)} · ${stars(r.avg)} <span>(${r.count})</span></div>
+      <div class="p-meta"><span class="p-seller" onclick="event.stopPropagation();go('#/s/${s.slug}')" title="Visit ${esc(s.name)}">${esc(s.name)}</span> · ${stars(r.avg)} <span>(${r.count})</span></div>
       <div class="p-price-row"><span class="p-price">${money(p.price)}</span><span class="p-ship">${p.ship ? '+' + money(p.ship) + ' ship' : 'Free ship'}</span></div>
     </div></div>`;
 }
@@ -270,6 +270,7 @@ function viewSearch(seg, q) {
   if (f.seller) { const s = sellerById(f.seller); if (s) pills.push(['seller', s.name]); }
   return `<div class="wrap"><div class="page-head"><h1>Shop parts</h1><p>Fitment-checked listings from verified sellers.</p></div>
   <div class="browse">
+    <button class="filters-toggle btn btn-outline btn-sm" onclick="$('.filters').classList.toggle('open');this.textContent=this.textContent.includes('Show')?'✕ Hide filters':'☰ Show filters'">☰ Show filters</button>
     <aside class="filters">
       <h4>Fits my bike</h4>
       <select onchange="${setF('bike', '')}.replace('bike=','x=');(function(v){const p=new URLSearchParams(location.hash.split('?')[1]||'');v?p.set('bike',v):p.delete('bike');go('#/search?'+p)})(this.value)">
@@ -414,7 +415,7 @@ function viewSell() {
     <div class="step-card"><div class="num">1</div><b>Apply in 2 minutes</b><p>Tell us what you sell. We review every application — that's why buyers trust the marketplace.</p></div>
     <div class="step-card"><div class="num">2</div><b>Verify & connect payouts</b><p>Stripe identity check + bank connection. You're the merchant; we handle checkout and protection.</p></div>
     <div class="step-card"><div class="num">3</div><b>List & sell</b><p>Photos, specs, fitment tags, your own codes. Listing is free — we take 10% only when you sell.</p></div></div>
-  <section class="section"><div class="browse" style="grid-template-columns:1fr 1fr;align-items:stretch">
+  <section class="section"><div class="browse cols-even">
     <div class="fee-calc reveal"><h3 style="margin-bottom:.3rem">What you'd keep</h3><p style="font-size:.85rem;color:var(--ink3)">Drag your monthly parts sales:</p>
       <input type="range" min="100" max="10000" value="1500" step="100" oninput="feeCalc(this.value)">
       <div class="fee-out"><span>Monthly sales</span><b id="fc-gross">$1,500</b></div>
@@ -501,7 +502,7 @@ function showCartDrawer() {
   const sub = all.reduce((s, i) => s + i.price * i.qty, 0);
   $('#drawer').innerHTML = `<div class="drawer-head"><h3>Your cart (${cartCount()})</h3><button class="modal-x" onclick="closeDrawer()">${icon('x')}</button></div>
   <div class="drawer-body">${all.length ? all.map(i => `<div class="cart-line"><div class="thumb">${productArt(i.p)}</div>
-    <div style="flex:1"><b>${esc(i.title)}</b><small>${money(i.price)} · ${esc(sellerById(i.p.sellerId).name)}</small>
+    <div style="flex:1"><b>${esc(i.title)}</b><small>${money(i.price)} · <a href="#/s/${sellerById(i.p.sellerId).slug}" onclick="closeDrawer()">${esc(sellerById(i.p.sellerId).name)}</a></small>
       <div class="qty" style="margin-top:.3rem;height:28px;display:inline-flex"><button onclick="setCartQty('${i.pid}',${i.qty - 1})">−</button><span style="font-size:.8rem">${i.qty}</span><button onclick="setCartQty('${i.pid}',${i.qty + 1})">+</button></div></div>
     <b style="font-size:.88rem">${money(i.price * i.qty)}</b></div>`).join('')
     : '<div class="empty" style="padding:2.5rem 0"><div class="big">🛒</div>Cart\'s empty. Go find that part.</div>'}</div>
@@ -535,7 +536,7 @@ function viewCart() {
         <div class="row total"><span>Seller total</span><span>${money(pr.total)}</span></div></div></div>`;
   }).join('');
   return `<div class="wrap"><div class="page-head"><h1>Cart</h1><p>${ids.length > 1 ? 'Multiple sellers — one payment. We split it behind the scenes.' : ''}</p></div>
-    <div class="browse" style="grid-template-columns:1fr 340px">
+    <div class="browse cols-cart">
       <div>${html}</div>
       <div class="panel" style="position:sticky;top:84px"><h3 style="margin-bottom:.6rem">Order summary</h3>
         <div class="totals">${discTotal ? `<div class="row disc"><span>You're saving</span><b>${money(discTotal)}</b></div>` : ''}
@@ -567,7 +568,7 @@ function viewCheckout() {
     return `<div class="row"><span>${esc(sellerById(sid).name)} (${items.reduce((s, i) => s + i.qty, 0)} items${pr.discount ? ', code applied' : ''})</span><span>${money(pr.total)}</span></div>`;
   }).join('');
   return `<div class="wrap"><div class="page-head"><h1>Checkout</h1><p>Simulated payment — this is the demo. No card is charged, ever.</p></div>
-  <div class="browse" style="grid-template-columns:1fr 380px">
+  <div class="browse cols-cart">
     <form class="form panel" id="pay-form" onsubmit="event.preventDefault();doPay(this)">
       <h3>Shipping address</h3>
       <div class="form-row"><div class="field"><label>Full name</label><input name="name" required value="${esc(me().name)}"></div>
@@ -618,7 +619,7 @@ function viewSuccess(seg) {
   return `<div class="wrap" style="max-width:640px"><div class="empty" style="padding-top:3rem">
     <div class="big">🎉</div><h1 style="color:var(--navy)">Order confirmed!</h1>
     <p style="margin:.4rem 0 1.4rem">${orders.length > 1 ? `One payment of <b>${money(total)}</b>, split across ${orders.length} sellers.` : `<b>${money(total)}</b> paid.`} Confirmation "sent" to ${esc(me().email)} (demo).</p></div>
-    ${orders.map(o => `<div class="cart-group"><div class="cart-group-head"><b>${esc(sellerById(o.sellerId).name)}</b><span class="badge badge-verified" style="margin-left:auto">Paid</span></div>
+    ${orders.map(o => `<div class="cart-group"><div class="cart-group-head"><b><a href="#/s/${sellerById(o.sellerId).slug}" style="color:inherit">${esc(sellerById(o.sellerId).name)}</a></b><span class="badge badge-verified" style="margin-left:auto">Paid</span></div>
       ${o.items.map(i => `<div class="cart-line" style="border:none;padding:.35rem 0"><span style="flex:1;font-size:.9rem">${i.qty}× ${esc(i.title)}</span><b>${money(i.price * i.qty)}</b></div>`).join('')}
       <div class="totals">${o.discount ? `<div class="row disc"><span>Discount</span><span>−${money(o.discount)}</span></div>` : ''}<div class="row"><span>Seller receives (after 10% fee)</span><span>${money(o.total - o.fee)}</span></div></div></div>`).join('')}
     <div style="display:flex;gap:.7rem;justify-content:center;margin-top:1.2rem"><a class="btn btn-primary" href="#/orders">Track my orders</a><a class="btn btn-outline" href="#/search">Keep shopping</a></div></div>`;
@@ -638,7 +639,7 @@ function orderCard(o) {
   const reviewed = DB.reviews.some(r => r.orderId === o.id);
   const disputed = DB.reports.some(r => r.orderId === o.id);
   return `<div class="cart-group reveal in">
-    <div class="cart-group-head"><b>${esc(s.name)}</b><span style="color:var(--ink3);font-size:.78rem">· ${timeAgo(o.ts)}</span>
+    <div class="cart-group-head"><b><a href="#/s/${s.slug}" style="color:inherit" title="Visit shop">${esc(s.name)}</a></b><span style="color:var(--ink3);font-size:.78rem">· ${timeAgo(o.ts)}</span>
       <span class="badge ${o.status === 'delivered' ? 'badge-verified' : o.status === 'refunded' ? 'badge-danger' : 'badge-gray'}" style="margin-left:auto">${o.status}</span></div>
     ${o.items.map(i => `<div class="cart-line" style="padding:.4rem 0"><span style="flex:1;font-size:.9rem">${i.qty}× ${esc(i.title)}</span><b>${money(i.price * i.qty)}</b></div>`).join('')}
     <div class="timeline">${steps.map((st, i2) => `<div class="t-step ${i2 <= si ? 'done' : ''}"><div class="t-dot">${i2 <= si ? icon('check') : ''}</div>${st}</div>`).join('')}</div>
@@ -695,7 +696,7 @@ function viewAccount() {
   const u = me();
   const wl = u.wishlist.map(productById).filter(Boolean);
   return `<div class="wrap"><div class="page-head"><h1>My account</h1></div>
-  <div class="browse" style="grid-template-columns:320px 1fr">
+  <div class="browse cols-account">
     <div class="panel"><div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem"><span class="avatar" style="width:52px;height:52px;font-size:1.1rem">${esc(u.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</span>
       <div><b>${esc(u.name)}</b><div style="font-size:.8rem;color:var(--ink3)">${esc(u.email)}</div><span class="badge badge-gray">${u.role}</span></div></div>
       <form class="form" onsubmit="event.preventDefault();me().name=this.name.value;save();render();toast('Profile updated.')">
