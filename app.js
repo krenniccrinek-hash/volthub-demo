@@ -43,10 +43,12 @@ const sellerLogoBg = (s) => s.accent || s.color;
 const sellerInitials = (s) => esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2));
 const logoContent = (s) => s.logo ? `<img class="logo-fill" src="${esc(s.logo)}" alt="">` : sellerInitials(s);
 const PRESET_GRADIENTS = [
-  'linear-gradient(135deg,#2f3136,#6b6f76)', 'linear-gradient(135deg,#1c1d20,#4a4d52)',
-  'linear-gradient(135deg,#17181a,#3a3c40)', 'linear-gradient(135deg,#5b5f66,#9ea2a9)',
-  'linear-gradient(135deg,#3a3c40,#8a8d93)', 'linear-gradient(135deg,#52565c,#a8abb1)',
-  'linear-gradient(135deg,#74787f,#c4c7cd)', 'linear-gradient(135deg,#33353a,#7a7e85)',
+  'linear-gradient(135deg,#2f3136,#6b6f76)', 'linear-gradient(135deg,#17181a,#3a3c40)',
+  'linear-gradient(135deg,#123a6b,#2f7ed8)', 'linear-gradient(135deg,#0f766e,#2dd4bf)',
+  'linear-gradient(135deg,#155e75,#7dd3fc)', 'linear-gradient(135deg,#4c1d95,#a78bfa)',
+  'linear-gradient(135deg,#9d174d,#f472b6)', 'linear-gradient(135deg,#b45309,#f59e0b)',
+  'linear-gradient(135deg,#b91c1c,#f87171)', 'linear-gradient(135deg,#166534,#4ade80)',
+  'linear-gradient(135deg,#1e293b,#64748b)', 'linear-gradient(135deg,#7c2d12,#fb923c)',
 ];
 const gradColors = (str) => { const m = (str || '').match(/#[0-9a-f]{6}/gi); return m && m.length >= 2 ? [m[0], m[1]] : ['#2f3136', '#6b6f76']; };
 
@@ -124,7 +126,7 @@ function heroFallTiles() {
   for (let i = 0; i < N; i++) {
     const p = picks[i % picks.length];
     const left = (i / N) * 92 + 2 + (Math.random() * 4 - 2);
-    const dur = 40 + Math.random() * 24;
+    const dur = 26 + Math.random() * 16;
     const delay = -Math.random() * dur;
     const r0 = Math.round(Math.random() * 20 - 10), r1 = r0 + Math.round(Math.random() * 24 - 12);
     const w = 98 + Math.round(Math.random() * 32);
@@ -179,8 +181,9 @@ function renderFooter() {
   $('#footer').innerHTML = `<div class="footer"><div class="footer-inner">
     <div><div class="logo" style="color:#fff" aria-label="IonxSupply"><img class="logo-img logo-img-invert" src="img/logo.png" alt="IonxSupply" onerror="this.outerHTML=logoLockup()"></div>
       <p style="font-size:.84rem;margin-top:.6rem;max-width:270px">The parts market that knows your bike. Verified sellers, fitment-first search, buyer protection.</p>
-      <form class="news-input" onsubmit="event.preventDefault();toast('<b>Subscribed!</b> (demo — no emails sent)');this.reset()">
-        <input placeholder="Email for drop alerts" type="email" required><button class="btn btn-aqua btn-sm" type="submit">Join</button></form></div>
+      <form class="news-input" onsubmit="event.preventDefault();joinDropAlerts(this)">
+        <input placeholder="Email for drop alerts" type="email" required><button class="btn btn-aqua btn-sm" type="submit">Join</button></form>
+      <p style="font-size:.72rem;opacity:.72;margin-top:.45rem;max-width:270px">New listings + restocks in the categories and bikes you shop. No spam.</p></div>
     <div><h5>Marketplace</h5><a href="#/search">All parts</a><a href="#/search?cat=batteries">Batteries</a><a href="#/search?cat=motors">Motors</a><a href="#/search?cond=used">Used parts</a><a href="#/sellers">Seller directory</a></div>
     <div><h5>Sell</h5><a href="#/sell">Become a seller</a><a href="#/legal/prohibited">Prohibited items</a><a href="#/dashboard">Seller dashboard</a></div>
     <div><h5>Trust & legal</h5><a href="#/legal/refunds">Buyer protection</a><a href="#/legal/tos">Terms of Service</a><a href="#/legal/privacy">Privacy</a><a href="#/legal/prohibited">Battery shipping rules</a></div>
@@ -407,12 +410,16 @@ function viewProduct(seg) {
       <div class="rating-line">${stars(r.avg)} <b>${r.avg ? r.avg.toFixed(1) : '—'}</b> seller rating (${r.count}) · ${p.sold} sold · ${p.views} views</div>
       <div style="margin-top: .9rem"><span class="pd-price">${money(p.price)}</span>
         <div class="pd-ship-line">${p.ship ? `+ ${money(p.ship)} shipping` : '✅ Free shipping'} · ships from ${esc(s.name)}</div></div>
-      ${suspended ? `<div class="notice">This seller is currently suspended — item unavailable.</div>` : `
+      ${suspended ? `<div class="notice">This seller is currently suspended — item unavailable.</div>` : (p.qty <= 0 ? `
+      <div class="pd-buy">
+        <button class="btn btn-primary btn-lg" style="flex:1" onclick="notifyMe('${p.id}')">🔔 Notify me when it's back</button>
+        <button class="btn btn-outline ${wished ? 'on' : ''}" onclick="toggleWish('${p.id}')" aria-label="Watchlist">${icon('heart')}</button>
+      </div><p style="font-size:.82rem;color:var(--ink3);margin-top:.45rem">Out of stock — we'll email you the moment it's restocked.</p>` : `
       <div class="pd-buy">
         <div class="qty"><button onclick="pdQty(-1,${p.qty})">−</button><span id="pdq">1</span><button onclick="pdQty(1,${p.qty})">+</button></div>
         <button class="btn btn-primary btn-lg" style="flex:1" onclick="addToCart('${p.id}', +$('#pdq').textContent)">${icon('cart')} Add to cart</button>
         <button class="btn btn-outline ${wished ? 'on' : ''}" onclick="toggleWish('${p.id}')" aria-label="Watchlist">${icon('heart')}</button>
-      </div>`}
+      </div>`)}
       <div class="seller-box" onclick="go('#/s/${s.slug}')">
         <div class="s-logo" style="background:${sellerLogoBg(s)};width:44px;height:44px;font-size:.9rem">${logoContent(s)}</div>
         <div style="flex:1"><div class="s-name">${esc(s.name)} ${s.verified ? `<span class="badge badge-verified">${icon('check')} Verified</span>` : ''}</div>
@@ -947,15 +954,31 @@ function sellerOrderRows(list) {
     <td>${o.status === 'paid' ? `<button class="btn btn-aqua btn-sm" onclick="openShip('${o.id}')">Mark shipped</button>` : (o.tracking ? `<span style="font-size:.72rem;color:var(--ink3)">${esc(o.tracking.slice(0, 18))}…</span>` : '')}</td></tr>`).join('')}</table>`;
 }
 function openShip(oid) {
-  modal(`${modalHead('Mark shipped')}<div class="modal-body"><form class="form" onsubmit="event.preventDefault();doShip(this,'${oid}')">
+  const o = DB.orders.find(x => x.id === oid); if (!o) return;
+  const a = o.address;
+  modal(`${modalHead('Ship order · ' + oid.slice(0, 8))}<div class="modal-body">
+    ${a ? `<div class="ship-to"><div class="ship-to-h">📦 Ship to</div><b>${esc(a.name)}</b><br>${esc(a.line1)}<br>${esc(a.city)}, ${esc(a.state)} ${esc(a.zip)}</div>` : ''}
+    <div class="ship-items"><b>Items</b><br>${o.items.map(i => `${i.qty}× ${esc(i.title)}`).join('<br>')}</div>
+    <form class="form" onsubmit="event.preventDefault();doShip(this,'${oid}')">
     <div class="form-row"><div class="field"><label>Carrier</label><select name="carrier"><option>USPS</option><option>UPS</option><option>FedEx</option></select></div>
     <div class="field"><label>Tracking number</label><input name="tn" required placeholder="9400 1000 …"></div></div>
-    <button class="btn btn-primary">Confirm shipment</button><p style="font-size:.75rem;color:var(--ink3)">Buyer gets notified; payout releases on fulfillment.</p></form></div>`);
+    <button class="btn btn-primary">Confirm shipment</button><p style="font-size:.75rem;color:var(--ink3)">Buyer gets emailed the tracking; payout releases on fulfillment.</p></form></div>`);
 }
 function doShip(f, oid) {
   const o = DB.orders.find(x => x.id === oid);
   o.status = 'shipped'; o.shippedTs = Date.now(); o.tracking = f.carrier.value + ' ' + f.tn.value;
   save(); closeModal(); render(); toast('<b>Shipped ✓</b> Buyer notified (demo).');
+}
+function joinDropAlerts(f) {
+  const email = (f.querySelector('input').value || '').trim(); if (!email) return;
+  DB.subscribers = DB.subscribers || []; if (!DB.subscribers.includes(email)) DB.subscribers.push(email); save();
+  f.reset(); toast('<b>You\'re on the list.</b> We\'ll email you new drops & restocks (demo).');
+}
+function notifyMe(pid) {
+  if (!requireAuth()) return;
+  const u = me(); u.stockAlerts = u.stockAlerts || [];
+  if (!u.stockAlerts.includes(pid)) u.stockAlerts.push(pid);
+  save(); toast('<b>We\'ll let you know.</b> You\'ll get an email the moment it\'s back in stock (demo).');
 }
 function saveShop(f) { const s = mySeller(); s.name = f.name.value; s.tagline = f.tagline.value; s.bio = f.bio.value; s.website = normWebsite(f.website && f.website.value); save(); render(); toast('Shop settings saved.'); }
 
