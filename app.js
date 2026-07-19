@@ -37,12 +37,12 @@ const visibleProducts = () => DB.products.filter(p => p.qty > 0 && sellerActive(
 const sellerBannerBg = (s) => s.banner ? `url('${s.banner}') center/cover no-repeat` : s.color;
 const sellerLogoBg = (s) => s.accent || s.color;
 const PRESET_GRADIENTS = [
-  'linear-gradient(135deg,#123a6b,#2f7ed8)', 'linear-gradient(135deg,#0ea48a,#19c8a8)',
-  'linear-gradient(135deg,#141b23,#42566d)', 'linear-gradient(135deg,#b3541e,#e8a13c)',
-  'linear-gradient(135deg,#155e75,#8ecdf7)', 'linear-gradient(135deg,#4a3fc0,#8f7ff0)',
-  'linear-gradient(135deg,#8a1c3b,#e0567e)', 'linear-gradient(135deg,#1f6f4a,#54c98a)',
+  'linear-gradient(135deg,#5a3a22,#a8703c)', 'linear-gradient(135deg,#3f2c1a,#8a5a2c)',
+  'linear-gradient(135deg,#1a140f,#4a3b2c)', 'linear-gradient(135deg,#b3541e,#e8a13c)',
+  'linear-gradient(135deg,#6b4a2c,#c69a5e)', 'linear-gradient(135deg,#7a5a34,#c9a878)',
+  'linear-gradient(135deg,#8a6a3a,#e0c79a)', 'linear-gradient(135deg,#4a3b2c,#8a7761)',
 ];
-const gradColors = (str) => { const m = (str || '').match(/#[0-9a-f]{6}/gi); return m && m.length >= 2 ? [m[0], m[1]] : ['#123a6b', '#2f7ed8']; };
+const gradColors = (str) => { const m = (str || '').match(/#[0-9a-f]{6}/gi); return m && m.length >= 2 ? [m[0], m[1]] : ['#5a3a22', '#a8703c']; };
 
 /* ================= pricing (same contract as the build plan) ================= */
 const FEE_RATE = 0.10, FEE_MIN = 50;
@@ -99,7 +99,7 @@ function cartCount() { return cartOf().items.reduce((s, i) => s + i.qty, 0); }
 function renderNav() {
   const u = me(), s = mySeller();
   $('#nav').innerHTML = `<div class="nav"><div class="nav-inner">
-    <a class="logo" href="#/"><span class="logo-badge"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0d2b4e"/><path d="M36 8 L18 38 h11 L27 56 L46 26 h-11 Z" fill="#2ad3b5"/></svg></span>VoltHub</a>
+    <a class="logo" href="#/"><span class="logo-badge"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#2c2118"/><path d="M36 8 L18 38 h11 L27 56 L46 26 h-11 Z" fill="#d99a4a"/></svg></span>VoltHub</a>
     <nav class="nav-links">
       <a href="#/search">Shop parts</a><a href="#/sellers">Sellers</a><a href="#/sell">Sell on VoltHub</a>
       ${u && u.role === 'admin' ? '<a href="#/admin">Admin</a>' : ''}
@@ -134,7 +134,7 @@ function mobileMenu() {
 }
 function renderFooter() {
   $('#footer').innerHTML = `<div class="footer"><div class="footer-inner">
-    <div><div class="logo" style="color:#fff"><span class="logo-badge"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#2ad3b5"/><path d="M36 8 L18 38 h11 L27 56 L46 26 h-11 Z" fill="#0d2b4e"/></svg></span>VoltHub</div>
+    <div><div class="logo" style="color:#fff"><span class="logo-badge"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#d99a4a"/><path d="M36 8 L18 38 h11 L27 56 L46 26 h-11 Z" fill="#2c2118"/></svg></span>VoltHub</div>
       <p style="font-size:.84rem;margin-top:.6rem;max-width:270px">The parts market that knows your bike. Verified sellers, fitment-first search, buyer protection.</p>
       <form class="news-input" onsubmit="event.preventDefault();toast('<b>Subscribed!</b> (demo — no emails sent)');this.reset()">
         <input placeholder="Email for drop alerts" type="email" required><button class="btn btn-aqua btn-sm" type="submit">Join</button></form></div>
@@ -837,8 +837,8 @@ function brandEditorHTML(s) {
       <div class="brand-block">
         <label class="brand-lbl">Accent color <span class="hint">— your logo + storefront highlights</span></label>
         <div class="brand-row">
-          <input type="color" id="bp-accent" value="${accent || '#0ea48a'}" oninput="brandAccent()">
-          <span class="hint" id="bp-accent-hex">${accent || 'default (VoltHub aqua)'}</span>
+          <input type="color" id="bp-accent" value="${accent || '#8a561f'}" oninput="brandAccent()">
+          <span class="hint" id="bp-accent-hex">${accent || 'default (VoltHub oak)'}</span>
           <button type="button" class="btn btn-ghost btn-sm" onclick="brandAccentReset()">Reset</button>
         </div>
       </div>
@@ -852,7 +852,7 @@ function brandPreview() {
   $('#bp-logo').style.background = accent || color;
   const scope = document.querySelector('.brand-preview');
   if (accent) scope.style.setProperty('--shop-accent', accent); else scope.style.removeProperty('--shop-accent');
-  const hex = $('#bp-accent-hex'); if (hex) hex.textContent = accent || 'default (VoltHub aqua)';
+  const hex = $('#bp-accent-hex'); if (hex) hex.textContent = accent || 'default (VoltHub oak)';
 }
 function brandType(t) {
   const img = t === 'image';
