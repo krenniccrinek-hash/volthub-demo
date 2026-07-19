@@ -600,6 +600,7 @@ function viewSellers(seg, q) {
 /* ---------- sell (the ad + application) ---------- */
 function viewSell() {
   const u = me(); const app = u && DB.applications.find(a => a.userId === u.id && a.status === 'pending');
+  const rejApp = u && !app && DB.applications.find(a => a.userId === u.id && a.status === 'rejected');
   return `<div class="wrap">
   <div class="hero" style="border:none;background:none"><div class="hero-inner" style="padding:3rem 0 1.6rem">
     <span class="hero-eyebrow"><span class="dot"></span> Now onboarding e-motive sellers</span>
@@ -624,7 +625,7 @@ function viewSell() {
       ['Do I really get my own subdomain?', 'Yes — yourshop.ionxsupply.example (simulated in this demo, real wildcard domains in production). Your storefront, your branding, your codes.'],
     ].map(([q2, a]) => `<div class="acc-item"><button onclick="this.parentElement.classList.toggle('open')">${q2}<span class="chev">⌄</span></button><div class="acc-body"><div>${a}</div></div></div>`).join('')}</div>
   </div></section>
-  <section class="section" style="max-width:560px;margin:0 auto">
+  <section class="section" style="max-width:560px;margin:0 auto;padding-top:.4rem">
     <div class="panel reveal" id="apply">
       <h2 style="margin-bottom:.3rem">Apply to sell</h2>
       ${!u ? `<p style="color:var(--ink3);font-size:.9rem;margin-bottom:1rem">Sign in first — takes one click with a demo account.</p><button class="btn btn-primary" onclick="openAuth()">Sign in to apply</button>`
@@ -639,6 +640,10 @@ function viewSell() {
         </div>
         <button class="btn btn-aqua" onclick="demoApprove('${app.id}')">⚡ Demo shortcut: approve instantly</button>
         <p style="font-size:.75rem;color:var(--ink3);margin-top:.7rem">In production, steps 2–3 run through Stripe — a scammer can't fake a verified government ID or a real bank account, which is what keeps bad actors out.</p></div>`
+      : rejApp ? `<div class="notice" style="background:#fdeaea;border-color:#f0c9c9;color:var(--danger)">⚠️ Your application for <b>${esc(rejApp.shop)}</b> wasn't approved.</div>
+        ${rejApp.rejectReason ? `<div class="ship-to" style="margin-top:1rem"><div class="ship-to-h">Why it was rejected</div>${esc(rejApp.rejectReason)}</div>` : ''}
+        <p style="font-size:.85rem;color:var(--ink3);margin:1rem 0">Think we got it wrong, or fixed the issue? You can apply again.</p>
+        <button class="btn btn-primary" onclick="reapplyAfterReject('${rejApp.id}')">Apply again</button>`
       : `<form class="form" onsubmit="event.preventDefault();applySeller(this)">
         <div class="form-row"><div class="field"><label>Shop name</label><input name="shop" required placeholder="Volt Garage" maxlength="30"></div>
         <div class="field"><label>Shop URL <span style="font-weight:400;color:var(--ink3)">(optional)</span></label><input name="slug" pattern="[a-z0-9](-?[a-z0-9])*" placeholder="volt-garage" maxlength="24"><div class="hint">yourname.ionxsupply.example — auto-made from your shop name if left blank</div></div></div>
@@ -939,6 +944,7 @@ function viewDashboard(seg, q) {
     <div style="flex:1"><h1 style="font-size:1.4rem">${esc(s.name)}</h1><p>${s.slug}.ionxsupply.example · <a href="#/s/${s.slug}">view public storefront →</a></p></div>
     ${s.status === 'suspended' ? '<span class="badge badge-danger">SUSPENDED</span>' : '<span class="badge badge-verified">Active · payouts on</span>'}</div>
   <div class="side-tabs">${tabs.map(([v, n]) => `<button class="${tab === v ? 'active' : ''}" onclick="go('#/dashboard?tab=${v}')">${n}</button>`).join('')}</div>
+  ${s.status === 'suspended' ? `<div class="notice" style="background:#fdeaea;border-color:#f0c9c9;color:var(--danger)">🚫 <b>Your shop is suspended.</b> ${s.suspendReason ? 'Reason: ' + esc(s.suspendReason) + '. ' : ''}Your storefront and listings are hidden market-wide — reply to the trust team to appeal.</div>` : ''}
   ${tab === 'overview' ? `
     <div class="stat-grid">
       <div class="stat"><b data-count="${Math.round(rev / 100)}" data-prefix="$"></b><span>Net revenue (after 6.7% fee)</span></div>
@@ -1290,17 +1296,35 @@ function viewAdmin(seg, q) {
       <td>${s.status === 'active' ? `<button class="btn btn-danger btn-sm" onclick="suspendSeller('${s.id}')">Suspend</button>` : `<button class="btn btn-aqua btn-sm" onclick="unsuspendSeller('${s.id}')">Reinstate</button>`}</td></tr>`; }).join('')}</table></div>` : ''}
   </div>`;
 }
-function rejectApp(id) { const a = DB.applications.find(x => x.id === id); a.status = 'rejected'; save(); render(); toast('Application rejected.'); }
+function rejectApp(id) {
+  const a = DB.applications.find(x => x.id === id); if (!a) return;
+  modal(`${modalHead('Reject ' + esc(a.shop))}<div class="modal-body"><form class="form" onsubmit="event.preventDefault();doReject('${id}',this)">
+    <div class="field"><label>Reason <span style="font-weight:400;color:var(--ink3)">(sent to the applicant)</span></label><textarea name="reason" required placeholder="e.g. We couldn't verify your inventory, prohibited items in your pitch, or an incomplete application…"></textarea></div>
+    <button class="btn btn-danger">Reject application</button></form></div>`);
+}
+function doReject(id, f) {
+  const a = DB.applications.find(x => x.id === id); if (!a) return;
+  a.status = 'rejected'; a.rejectReason = f.reason.value.trim(); a.decidedTs = Date.now();
+  save(); closeModal(); render(); toast('Application rejected — reason sent to the applicant.');
+}
+function reapplyAfterReject(appId) { DB.applications = DB.applications.filter(a => a.id !== appId); save(); render(); }
 function resolveReport(id, status) {
   const r = DB.reports.find(x => x.id === id); r.status = status; r.resolvedTs = Date.now();
   r.resolution = status === 'resolved' ? 'Handled by trust team (demo).' : 'Reviewed — no policy violation found.';
   save(); render(); toast('Report ' + status + '.');
 }
 function suspendSeller(id) {
-  if (!confirm('Suspend this seller? Their storefront and all listings go dark immediately.')) return;
-  sellerById(id).status = 'suspended'; save(); render(); toast('<b>Seller suspended.</b> Listings hidden market-wide.', 'err');
+  const s = sellerById(id); if (!s) return;
+  modal(`${modalHead('Suspend ' + esc(s.name))}<div class="modal-body"><form class="form" onsubmit="event.preventDefault();doSuspend('${id}',this)">
+    <div class="notice" style="margin-bottom:1rem">Their storefront and all listings go dark immediately, market-wide.</div>
+    <div class="field"><label>Reason <span style="font-weight:400;color:var(--ink3)">(shown to the seller on their dashboard)</span></label><textarea name="reason" required placeholder="e.g. Repeated not-as-described reports, counterfeit items, or unshipped orders…"></textarea></div>
+    <button class="btn btn-danger">Suspend seller</button></form></div>`);
 }
-function unsuspendSeller(id) { sellerById(id).status = 'active'; save(); render(); toast('Seller reinstated.'); }
+function doSuspend(id, f) {
+  const s = sellerById(id); s.status = 'suspended'; s.suspendReason = f.reason.value.trim(); s.suspendedTs = Date.now();
+  save(); closeModal(); render(); toast('<b>Seller suspended.</b> Listings hidden market-wide.', 'err');
+}
+function unsuspendSeller(id) { const s = sellerById(id); s.status = 'active'; delete s.suspendReason; save(); render(); toast('Seller reinstated.'); }
 
 /* ---------- legal ---------- */
 function viewLegal(seg) {

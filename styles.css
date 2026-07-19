@@ -363,8 +363,7 @@ input[type=color]{width:46px;height:34px;padding:2px;border:1.5px solid var(--li
 .ft:hover{opacity:1;animation-play-state:paused;z-index:2}
 .ft:hover .ft-in{transform:scale(1.13);box-shadow:var(--shadow-lg);border-color:var(--aqua)}
 .ft:hover .ft-go{opacity:1}
-@keyframes heroFall{from{transform:translate3d(0,-180px,0) rotate(var(--r0,0deg))}to{transform:translate3d(0,820px,0) rotate(var(--r1,0deg))}}
-@media (max-width:640px){.hero-fall{display:none}}
+@keyframes heroFall{from{transform:translate3d(0,-200px,0) rotate(var(--r0,0deg))}to{transform:translate3d(0,960px,0) rotate(var(--r1,0deg))}}
 @media (max-width:600px){
   .hero h1{font-size:1.75rem}
   .logo-img{height:2.2rem;max-width:180px}
