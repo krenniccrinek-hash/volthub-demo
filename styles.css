@@ -74,9 +74,18 @@ input,select,textarea{font:inherit;color:var(--ink)}
 .nav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.86);backdrop-filter:blur(14px);border-bottom:1px solid transparent;transition:border-color .25s var(--ease-lux),box-shadow .25s var(--ease-lux)}
 .nav.scrolled{border-color:var(--line);box-shadow:var(--shadow-sm)}
 .nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:1rem;padding:.7rem 1.25rem}
-.logo{display:inline-flex;align-items:center;gap:.03em;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:1.42rem;letter-spacing:-.01em;color:var(--ink)}
+.logo{display:inline-flex;align-items:center;gap:.03em;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:1.7rem;letter-spacing:-.01em;color:var(--ink)}
 .logo-atom{width:1.02em;height:1.02em;flex:none;margin:0 .02em}
-.logo-img{height:2rem;width:auto;max-width:190px;display:block;object-fit:contain}
+.logo-img{height:2.7rem;width:auto;max-width:250px;display:block;object-fit:contain}
+.logo-img-invert{filter:invert(1);mix-blend-mode:screen}
+/* hover affordances on anything clickable */
+[onclick]{cursor:pointer}
+a:where(:not(.btn):not(.chip):not(.see-all):not(.logo):not(.code-tag):not(.pill)):hover{text-decoration:underline}
+footer a{transition:color .15s}
+footer a:hover{color:#fff;text-decoration:underline}
+.nav-links a{transition:color .15s}
+.crumb a:hover{text-decoration:underline;color:var(--ink)}
+.p-seller:hover{text-decoration:underline}
 .logo-badge{width:32px;height:32px;border-radius:9px;background:var(--navy);display:grid;place-items:center;flex:none}
 .logo-badge svg{width:18px;height:18px}
 .nav-links{display:flex;gap:.25rem;margin-left:.5rem}
@@ -142,7 +151,8 @@ input,select,textarea{font:inherit;color:var(--ink)}
 .hero-blob{position:absolute;pointer-events:none;filter:blur(60px);opacity:.5;border-radius:50%}
 .hero-blob.b1{width:480px;height:480px;background:radial-gradient(circle,#ececf0,transparent 65%);top:-160px;right:-80px}
 .hero-blob.b2{width:420px;height:420px;background:radial-gradient(circle,#e4e5e9,transparent 65%);bottom:-200px;left:-100px}
-.hero-inner{position:relative;z-index:3;max-width:860px;margin:0 auto;text-align:center;padding:4.2rem 1.25rem 3.4rem}
+.hero-inner{position:relative;z-index:3;max-width:860px;margin:0 auto;text-align:center;padding:4.2rem 1.25rem 3.4rem;pointer-events:none}
+.hero-inner form,.hero-inner input,.hero-inner button,.hero-inner a,.hero-inner .chip{pointer-events:auto}
 .hero-eyebrow{display:inline-flex;align-items:center;gap:.5rem;background:#fff;border:1px solid var(--line);border-radius:999px;padding:.35rem .9rem;font-size:.78rem;font-weight:600;color:var(--ink2);box-shadow:var(--shadow-sm)}
 .hero-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--aqua);animation:pulseDot 2s infinite}
 .hero h1{font-size:clamp(2rem,5vw,3.3rem);font-weight:800;color:var(--navy);margin:1.1rem 0 .8rem;line-height:1.12}

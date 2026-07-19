@@ -177,7 +177,7 @@ function mobileMenu() {
 }
 function renderFooter() {
   $('#footer').innerHTML = `<div class="footer"><div class="footer-inner">
-    <div><div class="logo" style="color:#fff" aria-label="IonxSupply">${logoLockup()}</div>
+    <div><div class="logo" style="color:#fff" aria-label="IonxSupply"><img class="logo-img logo-img-invert" src="img/logo.png" alt="IonxSupply" onerror="this.outerHTML=logoLockup()"></div>
       <p style="font-size:.84rem;margin-top:.6rem;max-width:270px">The parts market that knows your bike. Verified sellers, fitment-first search, buyer protection.</p>
       <form class="news-input" onsubmit="event.preventDefault();toast('<b>Subscribed!</b> (demo — no emails sent)');this.reset()">
         <input placeholder="Email for drop alerts" type="email" required><button class="btn btn-aqua btn-sm" type="submit">Join</button></form></div>
@@ -1117,7 +1117,7 @@ function openProductForm(pid) {
     <div class="field"><label>Photos <span style="font-weight:400;color:var(--ink3)">(optional — add several; the first is the cover, we generate clean art if empty)</span></label>
       <input type="file" accept="image/*" multiple id="pf-file" onchange="productPhotoUpload(this)" hidden>
       <input type="hidden" name="imgs" id="pf-imgs" value="${p ? esc(JSON.stringify(p.imgs && p.imgs.length ? p.imgs : (p.img ? [p.img] : []))) : '[]'}">
-      <div class="brand-row" style="margin-bottom:.5rem"><button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('pf-file').click()">⬆ Upload from computer</button><span class="hint">up to 6 · first = cover</span></div>
+      <div class="brand-row" style="margin-bottom:.5rem"><button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('pf-file').click()">⬆ Upload from computer</button><span class="hint">up to 10 · first = cover</span></div>
       <div id="pf-thumbs" class="pf-thumbs"></div>
       <div class="brand-row" style="margin-top:.5rem"><input class="brand-url" id="pf-url" placeholder="…or paste an image URL" style="flex:1"><button type="button" class="btn btn-ghost btn-sm" onclick="pfAddUrl()">Add</button></div></div>
     <div class="field"><label>Specs (electrical compatibility sells parts)</label>
@@ -1135,7 +1135,7 @@ function openProductForm(pid) {
   renderProductThumbs();
 }
 function pfImgs() { try { return JSON.parse(document.getElementById('pf-imgs').value || '[]'); } catch (e) { return []; } }
-function pfSetImgs(arr) { document.getElementById('pf-imgs').value = JSON.stringify(arr.slice(0, 6)); renderProductThumbs(); }
+function pfSetImgs(arr) { document.getElementById('pf-imgs').value = JSON.stringify(arr.slice(0, 10)); renderProductThumbs(); }
 function renderProductThumbs() {
   const box = document.getElementById('pf-thumbs'); if (!box) return;
   box.innerHTML = pfImgs().map((src, i) => `<span class="pf-thumb">${i === 0 ? '<span class="pf-cover">Cover</span>' : ''}<img src="${esc(src)}" alt=""><button type="button" onclick="pfRemoveImg(${i})" aria-label="Remove">×</button></span>`).join('');
@@ -1148,7 +1148,7 @@ function saveProduct(f, pid) {
   for (let i = 0; i < 4; i++) { const k = f['sk' + i]?.value.trim(), v = f['sv' + i]?.value.trim(); if (k && v) specs[k] = v; }
   const fits = BIKES.filter(b => f['fit_' + b.id]?.checked).map(b => b.id);
   let imgs = []; try { imgs = JSON.parse(f.imgs.value || '[]'); } catch (e) {}
-  imgs = imgs.filter(Boolean).slice(0, 6);
+  imgs = imgs.filter(Boolean).slice(0, 10);
   const base = {
     title: f.title.value, cat: f.cat.value, cond: f.cond.value, brand: f.brand.value || '—',
     price: Math.round(parseFloat(f.price.value) * 100), ship: Math.round(parseFloat(f.ship.value) * 100),
