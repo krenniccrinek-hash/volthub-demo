@@ -117,7 +117,7 @@ function seedDB() {
       { id: 's_trailvolt', userId: 'u_s6', slug: 'trailvolt', name: 'TrailVolt Used', color: SELLER_COLORS.trailvolt, banner: 'img/p_surron.jpg', accent: '#4a4d52',
         tagline: 'Budget used parts. Graded honestly, priced to move.',
         bio: 'Used and for-parts components from trail builds and teardowns. Read the condition notes — for-parts means for parts.',
-        status: 'active', joined: now - 90 * day, verified: false },
+        status: 'active', joined: now - 90 * day, verified: true },
     ],
     products: [
       // Volt Garage — motors & controllers

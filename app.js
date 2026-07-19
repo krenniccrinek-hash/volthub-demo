@@ -4,9 +4,9 @@
 const DBKEY = 'ionxsupply_db_v1';
 let DB;
 try { DB = JSON.parse(localStorage.getItem(DBKEY)) || null; } catch (e) { DB = null; }
-if (!DB || DB.v !== 3) {
+if (!DB || DB.v !== 4) {
   DB = seedDB();
-  DB.v = 3;
+  DB.v = 4;
   DB.products.forEach(p => { p.img = 'img/' + p.id + '.jpg'; });  // real CC-licensed photos; partArt() SVG is the onerror fallback
   const _sc = DB.products.find(p => p.id === 'p_bbshd'); if (_sc) _sc.imgs = ['img/p_bbshd.jpg', 'img/p_torque.jpg', 'img/p_kt35.jpg'];  // demo multi-photo gallery
   DB.guestCart = { items: [], codes: {} };
@@ -24,7 +24,8 @@ const me = () => DB.users.find(u => u.id === DB.session) || null;
 const sellerById = (id) => DB.sellers.find(s => s.id === id);
 const productById = (id) => DB.products.find(p => p.id === id);
 const userById = (id) => DB.users.find(u => u.id === id);
-const bikeById = (id) => BIKES.find(b => b.id === id);
+const allBikes = () => [...BIKES, ...(DB.customBikes || [])];
+const bikeById = (id) => allBikes().find(b => b.id === id);
 const catById = (id) => CATS.find(c => c.id === id);
 const mySeller = () => { const u = me(); return u && u.sellerId ? sellerById(u.sellerId) : null; };
 const cartOf = () => me() ? me().cart : DB.guestCart;
@@ -300,7 +301,7 @@ function viewHome() {
     <section class="section"><div class="section-head reveal"><div><h2>Shop by category</h2></div></div>
       <div class="grid grid-cats">${CATS.map(c => `<div class="cat-tile reveal" data-cat="${c.id}" onclick="go('#/search?cat=${c.id}')"><div class="ic">${icon(c.icon)}</div><b>${c.name}</b><small>${c.blurb}</small></div>`).join('')}</div></section>
     <section class="section"><div class="section-head reveal"><div><h2>Shop by bike</h2><p>Parts filtered to what actually fits</p></div></div>
-      <div class="hero-chips" style="justify-content:flex-start">${BIKES.map(b => `<button class="chip reveal" onclick="go('#/bike/${b.id}')">${b.brand} ${b.model}</button>`).join('')}</div></section>
+      <div class="hero-chips" style="justify-content:flex-start">${allBikes().map(b => `<button class="chip reveal" onclick="go('#/bike/${b.id}')">${b.brand} ${b.model}</button>`).join('')}</div></section>
     <section class="section"><div class="band reveal"><h2>Turn your parts bin into a storefront.</h2>
       <p>Your own shop at <b>yourname.ionxsupply.example</b>, discount codes, dashboards and payouts — we take 6.7% only when you sell.</p>
       <div class="stats"><div><b data-count="${DB.products.reduce((s, p) => s + p.sold, 0)}"></b><span>parts sold</span></div><div><b data-count="${DB.reviews.length}"></b><span>verified reviews</span></div><div><b>6.7%</b><span>flat fee, listing is free</span></div></div>
@@ -340,7 +341,7 @@ function similarProducts(query) {
 function viewSearch(seg, q) {
   const f = { q: q.get('q') || '', cat: q.get('cat') || '', cond: q.get('cond') || '', bike: q.get('bike') || '', min: q.get('min') || '', max: q.get('max') || '', sort: q.get('sort') || 'relevance', seller: q.get('seller') || '' };
   let list = visibleProducts();
-  if (f.q) { const t = f.q.toLowerCase(); list = list.filter(p => (p.title + ' ' + p.brand + ' ' + p.desc + ' ' + Object.values(p.specs).join(' ')).toLowerCase().includes(t) || (bikeById(f.bike) ? true : BIKES.some(b => p.fits.includes(b.id) && (b.brand + ' ' + b.model).toLowerCase().includes(t)))); }
+  if (f.q) { const t = f.q.toLowerCase(); list = list.filter(p => (p.title + ' ' + p.brand + ' ' + p.desc + ' ' + Object.values(p.specs).join(' ')).toLowerCase().includes(t) || (bikeById(f.bike) ? true : allBikes().some(b => p.fits.includes(b.id) && (b.brand + ' ' + b.model).toLowerCase().includes(t)))); }
   if (f.cat) list = list.filter(p => p.cat === f.cat);
   if (f.cond) list = list.filter(p => p.cond === f.cond);
   if (f.bike) list = list.filter(p => p.universal || p.fits.includes(f.bike));
@@ -364,7 +365,7 @@ function viewSearch(seg, q) {
     <aside class="filters">
       <h4>Fits my bike</h4>
       <select onchange="${setF('bike', '')}.replace('bike=','x=');(function(v){const p=new URLSearchParams(location.hash.split('?')[1]||'');v?p.set('bike',v):p.delete('bike');go('#/search?'+p)})(this.value)">
-        <option value="">Any bike</option>${BIKES.map(b => `<option value="${b.id}" ${f.bike === b.id ? 'selected' : ''}>${b.brand} ${b.model}</option>`).join('')}</select>
+        <option value="">Any bike</option>${allBikes().map(b => `<option value="${b.id}" ${f.bike === b.id ? 'selected' : ''}>${b.brand} ${b.model}</option>`).join('')}</select>
       <h4>Category</h4>
       ${CATS.map(c => `<label><input type="radio" name="cat" ${f.cat === c.id ? 'checked' : ''} onchange="${setF('cat', c.id)}">${c.name}</label>`).join('')}
       <label><input type="radio" name="cat" ${!f.cat ? 'checked' : ''} onchange="${setF('cat', '')}">All categories</label>
@@ -1157,6 +1158,22 @@ function saveBranding() {
 }
 
 /* product form */
+function bikeChecks(checkedIds) {
+  return allBikes().map(b => `<label class="check-line" style="padding:.12rem 0"><input type="checkbox" name="fit_${b.id}" ${checkedIds.includes(b.id) ? 'checked' : ''}> ${esc(b.brand)} ${esc(b.model)}</label>`).join('');
+}
+function addCustomBike() {
+  const brand = ($('#pf-bike-brand').value || '').trim(), model = ($('#pf-bike-model').value || '').trim();
+  if (!brand || !model) { toast('Enter both a brand and a model.', 'err'); return; }
+  DB.customBikes = DB.customBikes || [];
+  const id = (slugify(brand + '-' + model) || 'bike') + '-' + Math.random().toString(36).slice(2, 5);
+  DB.customBikes.push({ id, brand, model, cls: 'Custom' }); save();
+  const checked = allBikes().filter(b => { const el = document.querySelector(`#pf-bikes input[name="fit_${b.id}"]`); return el && el.checked; }).map(b => b.id);
+  checked.push(id);
+  $('#pf-bikes').innerHTML = bikeChecks(checked);
+  $('#pf-bikes').scrollTop = $('#pf-bikes').scrollHeight;
+  $('#pf-bike-brand').value = ''; $('#pf-bike-model').value = '';
+  toast(`<b>${esc(brand)} ${esc(model)}</b> added — buyers can now filter by it.`);
+}
 function openProductForm(pid) {
   const p = pid ? productById(pid) : null;
   const specs = p ? Object.entries(p.specs) : [['', ''], ['', ''], ['', '']];
@@ -1177,10 +1194,10 @@ function openProductForm(pid) {
       <div class="brand-row" style="margin-top:.5rem"><input class="brand-url" id="pf-url" placeholder="…or paste an image URL" style="flex:1"><button type="button" class="btn btn-ghost btn-sm" onclick="pfAddUrl()">Add</button></div></div>
     <div class="field"><label>Specs (electrical compatibility sells parts)</label>
       ${specs.slice(0, 4).map(([k, v], i) => `<div class="form-row" style="margin-bottom:.4rem"><input name="sk${i}" placeholder="Voltage" value="${esc(k)}"><input name="sv${i}" placeholder="52V" value="${esc(v)}"></div>`).join('')}</div>
-    <div class="field"><label>Fits which bikes?</label>
+    <div class="field"><label>Fits which bikes? <span style="font-weight:400;color:var(--ink3)">— don't see it? add it below</span></label>
       <label class="check-line" style="margin-bottom:.35rem"><input type="checkbox" name="universal" ${p && p.universal ? 'checked' : ''}> Universal fit</label>
-      <div style="max-height:130px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;padding:.5rem .7rem">
-      ${BIKES.map(b => `<label class="check-line" style="padding:.12rem 0"><input type="checkbox" name="fit_${b.id}" ${p && p.fits.includes(b.id) ? 'checked' : ''}> ${b.brand} ${b.model}</label>`).join('')}</div></div>
+      <div id="pf-bikes" style="max-height:130px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;padding:.5rem .7rem">${bikeChecks(p ? p.fits : [])}</div>
+      <div class="brand-row" style="margin-top:.5rem"><input id="pf-bike-brand" placeholder="Brand (e.g. Sur-Ron)" style="flex:1;min-width:0"><input id="pf-bike-model" placeholder="Model (e.g. Light Bee)" style="flex:1;min-width:0"><button type="button" class="btn btn-ghost btn-sm" onclick="addCustomBike()">+ Add bike</button></div></div>
     <div class="field"><label>Description</label><textarea name="desc" required>${p ? esc(p.desc) : ''}</textarea></div>
     <div class="notice" id="bat-note" style="display:none">🔋 Battery listings must declare certification (add a "Certification" spec) and ship ground. <a href="#/legal/prohibited">Policy</a></div>
     <button class="btn btn-primary btn-lg">${p ? 'Save changes' : 'Publish listing'}</button></form></div>`, true);
@@ -1201,7 +1218,7 @@ function saveProduct(f, pid) {
   const s = mySeller();
   const specs = {};
   for (let i = 0; i < 4; i++) { const k = f['sk' + i]?.value.trim(), v = f['sv' + i]?.value.trim(); if (k && v) specs[k] = v; }
-  const fits = BIKES.filter(b => f['fit_' + b.id]?.checked).map(b => b.id);
+  const fits = allBikes().filter(b => f['fit_' + b.id]?.checked).map(b => b.id);
   let imgs = []; try { imgs = JSON.parse(f.imgs.value || '[]'); } catch (e) {}
   imgs = imgs.filter(Boolean).slice(0, 10);
   const base = {
