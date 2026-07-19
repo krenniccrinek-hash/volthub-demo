@@ -32,12 +32,12 @@ const BIKES = [
 ];
 
 const SELLER_COLORS = {
-  voltgarage: 'linear-gradient(135deg,#5a3a22,#a8703c)',
-  packworks:  'linear-gradient(135deg,#3f2c1a,#8a5a2c)',
-  brakelab:   'linear-gradient(135deg,#1a140f,#4a3b2c)',
-  radspares:  'linear-gradient(135deg,#b3541e,#e8a13c)',
-  scootcity:  'linear-gradient(135deg,#6b4a2c,#c69a5e)',
-  trailvolt:  'linear-gradient(135deg,#7a5a34,#c9a878)',
+  voltgarage: 'linear-gradient(135deg,#2f3136,#6b6f76)',
+  packworks:  'linear-gradient(135deg,#1c1d20,#4a4d52)',
+  brakelab:   'linear-gradient(135deg,#17181a,#3a3c40)',
+  radspares:  'linear-gradient(135deg,#5b5f66,#9ea2a9)',
+  scootcity:  'linear-gradient(135deg,#3a3c40,#8a8d93)',
+  trailvolt:  'linear-gradient(135deg,#52565c,#a8abb1)',
 };
 
 function seedDB() {
@@ -74,11 +74,11 @@ function seedDB() {
         tagline: 'OEM & takeoff parts for Rad Power bikes.',
         bio: 'Parting out Rad bikes so you don\'t have to. Fenders, racks, batteries, displays and controllers pulled from working bikes — photographed as-is.',
         status: 'active', joined: now - 220 * day, verified: true },
-      { id: 's_scootcity', userId: 'u_s5', slug: 'scoot-city', name: 'ScootCity Parts', color: SELLER_COLORS.scootcity, accent: '#a06a35',
+      { id: 's_scootcity', userId: 'u_s5', slug: 'scoot-city', name: 'ScootCity Parts', color: SELLER_COLORS.scootcity, accent: '#5b5f66',
         tagline: 'Segway, Niu & Xiaomi scooter parts with same-day ship.',
         bio: 'Scooter commuters keep the city moving. Fenders, brake levers, tires and batteries for the big scooter brands, shipped from Chicago.',
         status: 'active', joined: now - 150 * day, verified: true },
-      { id: 's_trailvolt', userId: 'u_s6', slug: 'trailvolt', name: 'TrailVolt Used', color: SELLER_COLORS.trailvolt, banner: 'img/p_surron.jpg', accent: '#8a5a2c',
+      { id: 's_trailvolt', userId: 'u_s6', slug: 'trailvolt', name: 'TrailVolt Used', color: SELLER_COLORS.trailvolt, banner: 'img/p_surron.jpg', accent: '#4a4d52',
         tagline: 'Budget used parts. Graded honestly, priced to move.',
         bio: 'Used and for-parts components from trail builds and teardowns. Read the condition notes — for-parts means for parts.',
         status: 'active', joined: now - 90 * day, verified: false },

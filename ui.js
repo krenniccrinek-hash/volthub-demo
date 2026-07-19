@@ -44,12 +44,12 @@ const icon = (n, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill="non
 
 /* ---------- product art (SVG tiles; unique gradient ids per instance) ---------- */
 const CAT_TINT = {
-  batteries: ['#d9f7ef', '#bfe9f0', '#0ea48a'], motors: ['#dcebfa', '#c3dcf5', '#2f7ed8'],
-  controllers: ['#e3f0fa', '#cfe0f2', '#123a6b'], displays: ['#e0f2f8', '#c8e6f2', '#155e75'],
-  brakes: ['#e8eef4', '#d2dde8', '#42566d'], drivetrain: ['#dff4ee', '#c5e8dd', '#0ea48a'],
-  wheels: ['#e4eefa', '#cddff2', '#2f7ed8'], suspension: ['#e6f0f6', '#cfe2ee', '#155e75'],
-  lights: ['#fdf6e3', '#f4e6c0', '#a8700f'], chargers: ['#def5f0', '#c2e9e0', '#0ea48a'],
-  security: ['#e9edf2', '#d4dce6', '#2a3441'], accessories: ['#e3f2f0', '#cbe7e3', '#0d2b4e'],
+  batteries: ['#eeeef1', '#dbdce1', '#4a4d52'], motors: ['#ececf0', '#d7d8dd', '#3a3c40'],
+  controllers: ['#eef0f2', '#dcdee2', '#33353a'], displays: ['#eaebee', '#d6d8dd', '#4a4d52'],
+  brakes: ['#e9eaed', '#d4d6db', '#3c3f44'], drivetrain: ['#eff0f3', '#dadce1', '#52565c'],
+  wheels: ['#ececf0', '#d8dadf', '#3a3c40'], suspension: ['#eaebee', '#d6d8de', '#45484d'],
+  lights: ['#f0f0f3', '#dedfe4', '#5b5f66'], chargers: ['#edeef1', '#d9dbe0', '#4a4d52'],
+  security: ['#e9eaed', '#d4d6db', '#33353a'], accessories: ['#eceef1', '#d8dade', '#1c1d20'],
 };
 let _artN = 0;
 function partArt(cat) {

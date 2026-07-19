@@ -37,12 +37,12 @@ const visibleProducts = () => DB.products.filter(p => p.qty > 0 && sellerActive(
 const sellerBannerBg = (s) => s.banner ? `url('${s.banner}') center/cover no-repeat` : s.color;
 const sellerLogoBg = (s) => s.accent || s.color;
 const PRESET_GRADIENTS = [
-  'linear-gradient(135deg,#5a3a22,#a8703c)', 'linear-gradient(135deg,#3f2c1a,#8a5a2c)',
-  'linear-gradient(135deg,#1a140f,#4a3b2c)', 'linear-gradient(135deg,#b3541e,#e8a13c)',
-  'linear-gradient(135deg,#6b4a2c,#c69a5e)', 'linear-gradient(135deg,#7a5a34,#c9a878)',
-  'linear-gradient(135deg,#8a6a3a,#e0c79a)', 'linear-gradient(135deg,#4a3b2c,#8a7761)',
+  'linear-gradient(135deg,#2f3136,#6b6f76)', 'linear-gradient(135deg,#1c1d20,#4a4d52)',
+  'linear-gradient(135deg,#17181a,#3a3c40)', 'linear-gradient(135deg,#5b5f66,#9ea2a9)',
+  'linear-gradient(135deg,#3a3c40,#8a8d93)', 'linear-gradient(135deg,#52565c,#a8abb1)',
+  'linear-gradient(135deg,#74787f,#c4c7cd)', 'linear-gradient(135deg,#33353a,#7a7e85)',
 ];
-const gradColors = (str) => { const m = (str || '').match(/#[0-9a-f]{6}/gi); return m && m.length >= 2 ? [m[0], m[1]] : ['#5a3a22', '#a8703c']; };
+const gradColors = (str) => { const m = (str || '').match(/#[0-9a-f]{6}/gi); return m && m.length >= 2 ? [m[0], m[1]] : ['#2f3136', '#6b6f76']; };
 
 /* ================= pricing (same contract as the build plan) ================= */
 const FEE_RATE = 0.10, FEE_MIN = 50;
@@ -99,7 +99,7 @@ function cartCount() { return cartOf().items.reduce((s, i) => s + i.qty, 0); }
 function renderNav() {
   const u = me(), s = mySeller();
   $('#nav').innerHTML = `<div class="nav"><div class="nav-inner">
-    <a class="logo" href="#/"><span class="logo-badge"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#2c2118"/><path d="M36 8 L18 38 h11 L27 56 L46 26 h-11 Z" fill="#d99a4a"/></svg></span>VoltHub</a>
+    <a class="logo" href="#/"><span class="logo-badge"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#1c1d20"/><path d="M36 8 L18 38 h11 L27 56 L46 26 h-11 Z" fill="#c4c7cd"/></svg></span>VoltHub</a>
     <nav class="nav-links">
       <a href="#/search">Shop parts</a><a href="#/sellers">Sellers</a><a href="#/sell">Sell on VoltHub</a>
       ${u && u.role === 'admin' ? '<a href="#/admin">Admin</a>' : ''}
@@ -134,7 +134,7 @@ function mobileMenu() {
 }
 function renderFooter() {
   $('#footer').innerHTML = `<div class="footer"><div class="footer-inner">
-    <div><div class="logo" style="color:#fff"><span class="logo-badge"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#d99a4a"/><path d="M36 8 L18 38 h11 L27 56 L46 26 h-11 Z" fill="#2c2118"/></svg></span>VoltHub</div>
+    <div><div class="logo" style="color:#fff"><span class="logo-badge"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#c4c7cd"/><path d="M36 8 L18 38 h11 L27 56 L46 26 h-11 Z" fill="#1c1d20"/></svg></span>VoltHub</div>
       <p style="font-size:.84rem;margin-top:.6rem;max-width:270px">The parts market that knows your bike. Verified sellers, fitment-first search, buyer protection.</p>
       <form class="news-input" onsubmit="event.preventDefault();toast('<b>Subscribed!</b> (demo — no emails sent)');this.reset()">
         <input placeholder="Email for drop alerts" type="email" required><button class="btn btn-aqua btn-sm" type="submit">Join</button></form></div>
@@ -259,6 +259,21 @@ function sCard(s, r) {
 }
 
 /* ---------- search ---------- */
+function similarProducts(query) {
+  const toks = (query || '').toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length >= 2);
+  const popular = () => [...visibleProducts()].sort((a, b) => b.sold - a.sold).slice(0, 8);
+  if (!toks.length) return popular();
+  const scored = visibleProducts().map(p => {
+    const title = p.title.toLowerCase();
+    const hay = (title + ' ' + p.brand + ' ' + p.desc + ' ' + Object.values(p.specs).join(' ') + ' ' + (catById(p.cat)?.name || '') + ' ' + p.fits.map(id => { const b = bikeById(id); return b ? b.brand + ' ' + b.model : ''; }).join(' ')).toLowerCase();
+    let score = 0;
+    toks.forEach(t => { if (title.includes(t)) score += 3; else if (hay.includes(t)) score += 1; });
+    return { p, score };
+  }).filter(x => x.score > 0);
+  scored.sort((a, b) => b.score - a.score || b.p.sold - a.p.sold);
+  const out = scored.slice(0, 8).map(x => x.p);
+  return out.length ? out : popular();
+}
 function viewSearch(seg, q) {
   const f = { q: q.get('q') || '', cat: q.get('cat') || '', cond: q.get('cond') || '', bike: q.get('bike') || '', min: q.get('min') || '', max: q.get('max') || '', sort: q.get('sort') || 'relevance', seller: q.get('seller') || '' };
   let list = visibleProducts();
@@ -274,6 +289,7 @@ function viewSearch(seg, q) {
   else if (f.sort === 'new') list.sort((a, b) => b.ts - a.ts);
   else if (f.sort === 'selling') list.sort((a, b) => b.sold - a.sold);
   else list.sort((a, b) => (b.sold * 2 + b.views / 50) - (a.sold * 2 + a.views / 50));
+  const similar = (!list.length && f.q) ? similarProducts(f.q) : [];
   const setF = (k, v) => { const p = new URLSearchParams(); Object.entries({ ...f, [k]: v }).forEach(([a, b]) => b && p.set(a, b)); return `go('#/search?${p.toString().replace(/'/g, '')}')`; };
   const pills = [];
   if (f.q) pills.push(['q', `“${esc(f.q)}”`]); if (f.cat) pills.push(['cat', catById(f.cat)?.name]);
@@ -298,10 +314,12 @@ function viewSearch(seg, q) {
     </aside>
     <div>
       ${pills.length ? `<div class="filter-pills">${pills.map(([k, label]) => `<span class="pill">${label}<button onclick="${setF(k, '')}">✕</button></span>`).join('')}<button class="btn-ghost btn btn-sm" onclick="go('#/search')">Clear all</button></div>` : ''}
-      <div class="results-head"><span class="count"><b>${list.length}</b> parts found</span>
+      <div class="results-head"><span class="count">${list.length ? `<b>${list.length}</b> parts found` : (f.q ? `No exact match for <b>“${esc(f.q)}”</b>` : `<b>0</b> parts found`)}</span>
         <div class="sort">Sort <select onchange="(function(v){const p=new URLSearchParams(location.hash.split('?')[1]||'');p.set('sort',v);go('#/search?'+p)})(this.value)">
           ${[['relevance', 'Relevance'], ['selling', 'Best selling'], ['new', 'Newest'], ['low', 'Price: low → high'], ['high', 'Price: high → low']].map(([v, n]) => `<option value="${v}" ${f.sort === v ? 'selected' : ''}>${n}</option>`).join('')}</select></div></div>
-      ${list.length ? `<div class="grid grid-products">${list.map(pCard).join('')}</div>` : `<div class="empty"><div class="big">🔍</div><b>No parts match those filters.</b><p>Try clearing the bike or condition filter.</p></div>`}
+      ${list.length ? `<div class="grid grid-products">${list.map(pCard).join('')}</div>`
+        : f.q ? `<div class="notice" style="margin-bottom:1.2rem">🔍 <b>No parts exactly match “${esc(f.q)}”.</b> ${similar.length ? 'Here are similar parts other riders buy:' : ''}</div>${similar.length ? `<div class="grid grid-products">${similar.map(pCard).join('')}</div>` : `<div class="empty"><p>Try a different search, or <a href="#/search">browse all parts</a>.</p></div>`}`
+        : `<div class="empty"><div class="big">🔍</div><b>No parts match those filters.</b><p>Try clearing the bike or condition filter.</p></div>`}
     </div></div></div>`;
 }
 function viewBike(seg) {
@@ -837,8 +855,8 @@ function brandEditorHTML(s) {
       <div class="brand-block">
         <label class="brand-lbl">Accent color <span class="hint">— your logo + storefront highlights</span></label>
         <div class="brand-row">
-          <input type="color" id="bp-accent" value="${accent || '#8a561f'}" oninput="brandAccent()">
-          <span class="hint" id="bp-accent-hex">${accent || 'default (VoltHub oak)'}</span>
+          <input type="color" id="bp-accent" value="${accent || '#5b5f66'}" oninput="brandAccent()">
+          <span class="hint" id="bp-accent-hex">${accent || 'default (VoltHub grey)'}</span>
           <button type="button" class="btn btn-ghost btn-sm" onclick="brandAccentReset()">Reset</button>
         </div>
       </div>
@@ -852,7 +870,7 @@ function brandPreview() {
   $('#bp-logo').style.background = accent || color;
   const scope = document.querySelector('.brand-preview');
   if (accent) scope.style.setProperty('--shop-accent', accent); else scope.style.removeProperty('--shop-accent');
-  const hex = $('#bp-accent-hex'); if (hex) hex.textContent = accent || 'default (VoltHub oak)';
+  const hex = $('#bp-accent-hex'); if (hex) hex.textContent = accent || 'default (VoltHub grey)';
 }
 function brandType(t) {
   const img = t === 'image';
