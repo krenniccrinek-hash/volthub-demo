@@ -170,7 +170,7 @@ input,select,textarea{font:inherit;color:var(--ink)}
 .p-price-row{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:.35rem}
 .p-price{font-family:'Sora';font-weight:700;font-size:1.08rem;color:var(--navy)}
 .p-ship{font-size:.72rem;color:var(--ink3)}
-.badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.7rem;font-weight:700;padding:.18rem .55rem;border-radius:999px;letter-spacing:.02em}
+.badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.7rem;font-weight:700;padding:.18rem .55rem;border-radius:999px;letter-spacing:.02em;white-space:nowrap}
 .badge-new{background:var(--aqua-soft);color:var(--aqua-deep)}
 .badge-like_new{background:#e3f0fa;color:var(--blue)}
 .badge-used{background:#fdf3e3;color:#a8700f}
@@ -261,15 +261,14 @@ input,select,textarea{font:inherit;color:var(--ink)}
 .protect svg{width:18px;height:18px;flex:none;stroke:var(--aqua-deep);margin-top:.1rem}
 
 /* ---------- storefront ---------- */
-.store-banner{height:190px;border-radius:var(--r-lg);position:relative;overflow:hidden;display:flex;align-items:flex-end}
-.store-scrim{position:absolute;inset:0;background:linear-gradient(to top,rgba(6,15,26,.8) 0%,rgba(6,15,26,.36) 44%,transparent 80%);pointer-events:none;z-index:1}
-.store-title{position:relative;z-index:2;margin:0;width:100%;padding:1.15rem 1.4rem;color:#fff;font-size:1.9rem;font-weight:800;line-height:1.15;display:flex;align-items:center;flex-wrap:wrap;gap:.55rem;text-shadow:0 1px 14px rgba(0,0,0,.45)}
-.store-title .badge{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);backdrop-filter:blur(6px);text-shadow:none;font-size:.72rem}
-.store-title .badge svg{stroke:#fff}
-.store-head{display:flex;align-items:end;gap:1.2rem;margin-top:-42px;position:relative;padding:0 1.4rem;flex-wrap:wrap}
-.store-actions{margin-left:auto}
-.store-meta{flex-basis:100%}
-.store-logo{width:88px;height:88px;border-radius:22px;display:grid;place-items:center;font-family:'Sora';font-weight:800;font-size:1.7rem;color:#fff;border:4px solid #fff;box-shadow:var(--shadow-md)}
+.store-banner{height:172px;border-radius:var(--r-lg);position:relative;overflow:hidden}
+.store-banner-glow{position:absolute;inset:0;background:radial-gradient(circle at 78% 20%,rgba(255,255,255,.28),transparent 58%)}
+.store-head{display:flex;align-items:flex-start;gap:1.1rem;padding:.9rem 1.4rem 0;position:relative;flex-wrap:wrap}
+.store-logo{width:92px;height:92px;border-radius:22px;display:grid;place-items:center;font-family:'Sora';font-weight:800;font-size:1.8rem;color:#fff;border:4px solid #fff;box-shadow:var(--shadow-md);flex:none;margin-top:-58px}
+.store-id{flex:1;min-width:220px}
+.store-name{font-size:1.5rem;font-weight:800;line-height:1.15;color:var(--navy);display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;margin:0 0 .2rem}
+.store-domain{font-size:.82rem;color:var(--ink3);margin-top:.15rem}
+.store-actions{flex:none}
 .tabs{display:flex;gap:.3rem;border-bottom:1.5px solid var(--line);margin:1.6rem 0 1.4rem}
 .tabs button{padding:.6rem 1.1rem;font-weight:600;font-size:.92rem;color:var(--ink3);border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:color .2s,border-color .2s}
 .tabs button.active{color:var(--navy);border-color:var(--aqua)}
@@ -432,10 +431,12 @@ input,select,textarea{font:inherit;color:var(--ink)}
   .hero-inner{padding:2.6rem 1.1rem 2.2rem}
   .hero-search{flex-wrap:nowrap}
   .hero-search .btn{padding:.6rem .9rem}
-  .store-head{gap:.8rem;margin-top:-34px}
-  .store-banner{height:132px}
-  .store-title{font-size:1.35rem;padding:.85rem 1.05rem;gap:.45rem}
-  .store-logo{width:66px;height:66px;font-size:1.25rem;border-radius:16px}
+  .store-banner{height:118px}
+  .store-head{gap:.85rem;padding-top:.7rem}
+  .store-logo{width:66px;height:66px;font-size:1.2rem;border-radius:16px;margin-top:-44px}
+  .store-name{font-size:1.25rem}
+  .store-id{flex-basis:100%;order:3;min-width:0;margin-top:.1rem}
+  .store-actions{order:2;margin-left:auto}
   .seller-box{flex-wrap:wrap;padding:.85rem}
   .seller-box .see-all{flex-basis:100%;justify-content:flex-end;padding-top:.65rem;margin-top:.1rem;border-top:1px solid var(--line)}
   .footer-inner{grid-template-columns:1fr}

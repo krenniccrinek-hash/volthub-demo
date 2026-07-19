@@ -356,15 +356,15 @@ function viewStore(seg, q) {
   const reviews = DB.reviews.filter(x => x.sellerId === s.id && !x.hidden).sort((a, b) => b.ts - a.ts);
   return `<div class="wrap">
     <div style="padding-top:1.3rem"><div class="store-banner" style="background:${s.color}">
-      <div style="position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(255,255,255,.25),transparent 55%)"></div>
-      <div class="store-scrim"></div>
-      <h1 class="store-title">${esc(s.name)} ${s.verified ? `<span class="badge badge-verified">${icon('check')} Verified seller</span>` : ''}</h1></div></div>
+      <div class="store-banner-glow"></div></div></div>
     <div class="store-head">
       <div class="store-logo" style="background:${s.color}">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</div>
-      <div class="store-actions"><button class="btn btn-danger btn-sm" onclick="openReport('${s.id}')">${icon('flag')} Report seller</button></div>
-      <div class="store-meta">
+      <div class="store-id">
+        <h1 class="store-name">${esc(s.name)} ${s.verified ? `<span class="badge badge-verified">${icon('check')} Verified seller</span>` : ''}</h1>
         <div class="rating-line">${stars(r.avg)} <b>${r.avg ? r.avg.toFixed(1) : 'New'}</b> (${r.count} reviews) · ${items.length} items · joined ${timeAgo(s.joined)}</div>
-        <div style="font-size:.82rem;color:var(--ink3);margin-top:.15rem">🌐 ${s.slug}.volthub.example <span style="opacity:.6">(seller subdomains — live in the real build)</span></div></div></div>
+        <div class="store-domain">🌐 ${s.slug}.volthub.example <span style="opacity:.6">(seller subdomains — live in the real build)</span></div>
+      </div>
+      <div class="store-actions"><button class="btn btn-danger btn-sm" onclick="openReport('${s.id}')">${icon('flag')} Report seller</button></div></div>
     ${codes.length ? `<div class="code-banner">🎟️ <b>Shop codes:</b> ${codes.map(c => `<button class="code-tag" onclick="navigator.clipboard&&navigator.clipboard.writeText('${c.code}');toast('<b>${c.code}</b> copied — paste it at checkout.')">${c.code}</button> <span style="color:var(--ink3)">${c.type === 'percent' ? c.value + '% off' : money(c.value) + ' off'}${c.min ? ' over ' + money(c.min) : ''}</span>`).join(' · ')}</div>` : ''}
     <div class="tabs">
       <button class="${tab === 'items' ? 'active' : ''}" onclick="go('#/s/${s.slug}?tab=items')">Items (${items.length})</button>
