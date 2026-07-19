@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoltHub — The parts market that knows your bike</title>
+<meta name="description" content="Buy and sell e-bike, e-scooter and e-motive parts from verified sellers. Fitment-first search, buyer protection, seller storefronts. Demo.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d2b4e'/%3E%3Cpath d='M36 8 L18 38 h11 L27 56 L46 26 h-11 Z' fill='%232ad3b5'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="demo-bar">⚡ <strong>VoltHub demo</strong> — simulated marketplace, fake payments, sample data. <button class="demo-bar-reset" onclick="resetDemo()">Reset demo data</button></div>
+
+<header id="nav"></header>
+
+<main id="view" aria-live="polite"></main>
+
+<footer id="footer"></footer>
+
+<!-- cart drawer -->
+<div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+<aside id="drawer" class="drawer" aria-label="Cart preview"></aside>
+
+<!-- modal root -->
+<div id="modal-root"></div>
+
+<!-- toast root -->
+<div id="toasts" class="toasts"></div>
+
+<script src="data.js"></script>
+<script src="ui.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
