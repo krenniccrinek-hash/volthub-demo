@@ -105,8 +105,12 @@ function closeDrawer() { $('#drawer').classList.remove('open'); $('#drawer-overl
 /* ---------- motion ---------- */
 let _obs;
 function revealInit() {
+  const els = $$('.reveal');
+  els.forEach(el => { const r = el.getBoundingClientRect(); if (r.top < innerHeight * 1.05) el.classList.add('in'); });  // above-fold: instant, no async flash
+  if (!('IntersectionObserver' in window)) { els.forEach(el => el.classList.add('in')); return; }
   if (!_obs) _obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); _obs.unobserve(e.target); } }), { threshold: .08 });
-  $$('.reveal').forEach(el => _obs.observe(el));
+  els.forEach(el => { if (!el.classList.contains('in')) _obs.observe(el); });
+  clearTimeout(revealInit._t); revealInit._t = setTimeout(() => els.forEach(el => el.classList.add('in')), 2500);  // fail-safe: never stuck invisible
 }
 function countUp(el, target, prefix = '', suffix = '') {
   const dur = 900, t0 = performance.now();

@@ -14,7 +14,10 @@ if (!DB || DB.v !== 3) {
 }
 if (!DB.guestCart) DB.guestCart = { items: [], codes: {} };
 
-function save() { localStorage.setItem(DBKEY, JSON.stringify(DB)); }
+function save() {
+  try { localStorage.setItem(DBKEY, JSON.stringify(DB)); }
+  catch (e) { console.warn('save failed', e); if (typeof toast === 'function') toast('<b>Storage is full.</b> Try fewer or smaller images.', 'err'); }
+}
 function resetDemo() { localStorage.removeItem(DBKEY); location.hash = '#/'; location.reload(); }
 
 const me = () => DB.users.find(u => u.id === DB.session) || null;
@@ -619,7 +622,11 @@ function feeCalc(v) {
   $('#fc-net').textContent = '$' + (+v - Math.round(v * .067)).toLocaleString();
 }
 function slugify(str) { return (str || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 24); }
-function normWebsite(u) { u = (u || '').trim(); if (!u) return null; return /^https?:\/\//i.test(u) ? u : 'https://' + u; }
+function normWebsite(u) {
+  u = (u || '').trim(); if (!u) return null;
+  if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+  try { const p = new URL(u); return (p.protocol === 'http:' || p.protocol === 'https:') ? p.href : null; } catch (e) { return null; }
+}
 function sellerWebLink(s) {
   if (!s || !s.website) return '';
   return ` <a class="seller-web" href="${esc(s.website)}" target="_blank" rel="noopener nofollow" onclick="event.stopPropagation()" title="${esc(s.name)}'s website — ${esc(s.website)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg></a>`;
