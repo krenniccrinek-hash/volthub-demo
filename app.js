@@ -4,7 +4,13 @@
 const DBKEY = 'volthub_db_v1';
 let DB;
 try { DB = JSON.parse(localStorage.getItem(DBKEY)) || null; } catch (e) { DB = null; }
-if (!DB || DB.v !== 1) { DB = seedDB(); DB.guestCart = { items: [], codes: {} }; save(); }
+if (!DB || DB.v !== 2) {
+  DB = seedDB();
+  DB.v = 2;
+  DB.products.forEach(p => { p.img = 'img/' + p.id + '.jpg'; });  // real CC-licensed photos; partArt() SVG is the onerror fallback
+  DB.guestCart = { items: [], codes: {} };
+  save();
+}
 if (!DB.guestCart) DB.guestCart = { items: [], codes: {} };
 
 function save() { localStorage.setItem(DBKEY, JSON.stringify(DB)); }

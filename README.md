@@ -22,6 +22,9 @@ A fully client-side simulation of VoltHub, a multi-seller marketplace for e-bike
 
 Or use the one-click persona buttons on the sign-in modal. "Reset demo data" in the top bar restores the seed.
 
+## Photos
+Product photos are CC-licensed images from Wikimedia Commons, committed into `img/` so they never break. Sources and licenses: `img/_attributions.txt`. New listings can supply any image URL (branded SVG part-art renders as fallback).
+
 ## Stack
 Plain HTML/CSS/JS, no build step. `data.js` (seed) → `ui.js` (icons, SVG part art, motion helpers) → `app.js` (hash router, simulated marketplace engine — same pricing contract as the production plan: 10% platform fee, min $0.50, per-seller order splits).
 
